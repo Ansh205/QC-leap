@@ -17,8 +17,8 @@ export default function Navbar() {
     router.push('/')
   }
   return (
-    <nav className="fixed top-0 left-0 flex h-14 w-full items-center border-b px-6">
-      <div className="flex w-full justify-between">
+    <nav className="fixed top-0 left-0 z-50 flex h-14 w-full items-center border-b bg-white px-6">
+      <div className="flex w-full items-center justify-between">
         <Link href={'/models'} className="text-2xl font-bold text-[#0088FF]">
           QC-Leap
         </Link>
