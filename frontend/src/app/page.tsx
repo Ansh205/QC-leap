@@ -30,7 +30,7 @@ export default function HomePage() {
     <>
       <div className="flex px-10">
         <div className="w-1/2 py-10">
-          <h1 className="text-5xl font-bold text-[#0088FF]">QC-Leap</h1>
+          <h1 className="text-5xl font-bold text-[#0064C8]">QC-Leap</h1>
           <h2 className="mt-2 text-4xl font-bold">Transform Quality Control with AI</h2>
           <p className="mt-4 text-lg leading-relaxed text-gray-600">
             Transform your manufacturing quality control with advanced AI models trained on just

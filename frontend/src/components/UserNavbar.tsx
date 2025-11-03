@@ -19,7 +19,7 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 z-50 flex h-14 w-full items-center border-b bg-white px-6">
       <div className="flex w-full items-center justify-between">
-        <Link href={'/models'} className="text-2xl font-bold text-[#0088FF]">
+        <Link href={'/models'} className="text-2xl font-bold text-[#0064C8]">
           QC-Leap
         </Link>
         <div className="flex items-center gap-9">

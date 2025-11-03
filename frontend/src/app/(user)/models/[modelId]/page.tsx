@@ -15,7 +15,7 @@ export default async function ModelDetailPage({ searchParams }) {
   }[step]
 
   return (
-    <div className="pt-3">
+    <div className="pt-8">
       <p className="text-slate-600">Inspection Model</p>
       <div className="mt-0.5 flex justify-between">
         <p className="text-3xl font-bold">QCL-1</p>
@@ -31,7 +31,7 @@ export default async function ModelDetailPage({ searchParams }) {
           </span>
         </div>
       </div>
-      <div className="relative mt-6 w-fit">
+      <div className="relative mt-10 w-fit">
         <div className="bg-border absolute top-5 z-0 h-px w-full"></div>
         <div className="relative z-10 flex gap-12">
           <Link href="?step=sample_images">
@@ -63,7 +63,7 @@ export default async function ModelDetailPage({ searchParams }) {
           </Link>
         </div>
       </div>
-      <div className="mt-5 h-full w-full">
+      <div className="mt-8 h-full w-full">
         <StepComponent />
       </div>
     </div>

@@ -31,7 +31,7 @@ const runs = [
 
 export default function ModelRunsPage() {
   return (
-    <div className="pt-3">
+    <div className="pt-8">
       <p className="text-slate-600">Inspection Model / Runs</p>
       <div className="mt-0.5 flex justify-between">
         <p className="text-3xl font-bold">QCL-1</p>
@@ -44,7 +44,7 @@ export default function ModelRunsPage() {
         </div>
       </div>
 
-      <div className="mt-7 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
         {runs.map((run) => (
           <Card key={run.id} className="relative pt-0">
             <div className="overflow-hidden rounded-t-md">
@@ -56,7 +56,7 @@ export default function ModelRunsPage() {
                 ))}
               </div>
             </div>
-            <CardContent className="px-4">
+            <CardContent>
               <div className="item-center relative flex justify-between">
                 <h3 className="text-lg font-semibold">{run.name}</h3>
                 <Link href={`./runs/${run.id}`}>

@@ -107,7 +107,7 @@ export default function ModelsPage() {
   }, [models, searchQuery, sortBy, filterStatus])
 
   return (
-    <div className="py-3">
+    <div className="pt-8 pb-3">
       <p className="text-slate-600">Company Pvt. Ltd.</p>
       <div className="flex justify-between">
         <p className="text-3xl font-bold">Inspection Models</p>
@@ -119,8 +119,7 @@ export default function ModelsPage() {
         </Link>
       </div>
 
-      <div className="mt-7 mb-8 flex flex-wrap items-center gap-4">
-        <div className="grid gap-3">
+      <div className="mt-10 mb-10 flex flex-wrap items-center gap-4">        <div className="grid gap-3">
           <Label className="text-slate-800">Model Name</Label>
 
           <Input
@@ -178,7 +177,7 @@ export default function ModelsPage() {
                 </div>
               )}
             </div>
-            <CardContent className="px-4">
+            <CardContent>
               <div className="flex items-start justify-between">
                 <h3 className="text-xl font-semibold">{model.name}</h3>
                 <Settings size={22} className="text-gray-500" />
