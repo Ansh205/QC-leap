@@ -107,11 +107,14 @@ export default function ModelsPage() {
   }, [models, searchQuery, sortBy, filterStatus])
 
   return (
-    <div className="pt-8 pb-3">
-      <p className="text-slate-600">Company Pvt. Ltd.</p>
+    <div className="py-8">
       <div className="flex justify-between">
-        <p className="text-3xl font-bold">Inspection Models</p>
-        <Link href={'/models/QCL-1'}>
+        <div>
+          <p className="text-3xl font-bold">Inspection Models</p>
+          <p className="text-slate-600">Company Pvt. Ltd.</p>
+        </div>
+
+        <Link href={'/models/QCL-1'} className="flex items-end">
           <Button className="w-48">
             <Plus />
             Create New Model
@@ -119,7 +122,9 @@ export default function ModelsPage() {
         </Link>
       </div>
 
-      <div className="mt-10 mb-10 flex flex-wrap items-center gap-4">        <div className="grid gap-3">
+      <div className="mt-10 mb-10 flex flex-wrap items-center gap-4">
+        {' '}
+        <div className="grid gap-3">
           <Label className="text-slate-800">Model Name</Label>
 
           <Input
@@ -129,7 +134,6 @@ export default function ModelsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-
         <div className="grid gap-3">
           <Label className="text-slate-800">Sort By</Label>
           <Select defaultValue="date" onValueChange={(v) => setSortBy(v)}>
@@ -180,7 +184,6 @@ export default function ModelsPage() {
             <CardContent>
               <div className="flex items-start justify-between">
                 <h3 className="text-xl font-semibold">{model.name}</h3>
-                <Settings size={22} className="text-gray-500" />
               </div>
               <div className="pt-2 text-gray-700">
                 <p>
@@ -214,9 +217,9 @@ export default function ModelsPage() {
                 </Link>
 
                 {model.status === 'Run' ? (
-                  <span className="flex h-full items-center justify-center rounded-md bg-green-600 py-2 text-sm text-white hover:bg-green-700">
+                  <button className="flex h-full items-center justify-center rounded-md bg-green-600 py-2 text-sm text-white hover:bg-green-700">
                     Run
-                  </span>
+                  </button>
                 ) : model.status === 'Training' ? (
                   <span className="flex h-full w-full items-center justify-center rounded-md bg-blue-600 py-2 text-sm text-white">
                     Training {model.statusPercent ? `(${model.statusPercent}%)` : ''}

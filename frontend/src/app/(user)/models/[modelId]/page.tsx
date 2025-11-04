@@ -5,7 +5,13 @@ import SampleImages from './_components/SampleImages'
 import Training from './_components/Training'
 import GeneratedImages from './_components/GeneratedImages'
 
-export default async function ModelDetailPage({ searchParams }) {
+type StepType = 'sample_images' | 'generated_images' | 'training'
+
+export default async function ModelDetailPage({
+  searchParams,
+}: {
+  searchParams: { step?: StepType }
+}) {
   const { step = 'sample_images' } = await searchParams
 
   const StepComponent = {
@@ -15,22 +21,26 @@ export default async function ModelDetailPage({ searchParams }) {
   }[step]
 
   return (
-    <div className="pt-8">
-      <p className="text-slate-600">Inspection Model</p>
+    <div className="py-8">
       <div className="mt-0.5 flex justify-between">
-        <p className="text-3xl font-bold">QCL-1</p>
-        <div className="flex gap-5">
+        <div>
+          <p className="text-3xl font-bold">QCL-1</p>
+          <p className="text-slate-600">Inspection Model</p>
+        </div>
+
+        <div className="flex items-end gap-5">
           <Link href={'./QCL-1/runs'}>
             <Button className="w-40 bg-slate-200 text-black" variant={'outline'}>
               <History />
               History
             </Button>
           </Link>
-          <span className="flex w-40 items-center justify-center rounded-md bg-gray-700 text-sm text-white">
+          <span className="flex h-9 w-40 items-center justify-center rounded-md bg-gray-700 text-sm text-white">
             New
           </span>
         </div>
       </div>
+
       <div className="relative mt-10 w-fit">
         <div className="bg-border absolute top-5 z-0 h-px w-full"></div>
         <div className="relative z-10 flex gap-12">

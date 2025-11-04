@@ -31,11 +31,13 @@ const runs = [
 
 export default function ModelRunsPage() {
   return (
-    <div className="pt-8">
-      <p className="text-slate-600">Inspection Model / Runs</p>
+    <div className="py-8">
       <div className="mt-0.5 flex justify-between">
-        <p className="text-3xl font-bold">QCL-1</p>
-        <div className="flex gap-5">
+        <div>
+          <p className="text-3xl font-bold">QCL-1</p>
+          <p className="text-slate-600">Inspection Model / Runs</p>
+        </div>
+        <div className="flex items-end gap-5">
           <Link href={'./'}>
             <Button className="w-40 bg-slate-200 text-black" variant={'outline'}>
               View Model

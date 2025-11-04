@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Bell, ChartColumnStacked, UserCog } from 'lucide-react'
@@ -38,8 +40,20 @@ export default function Navbar() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
+              <DropdownMenuGroup>
+                <Link href={'/account'}>
+                  <DropdownMenuItem>Account</DropdownMenuItem>
+                </Link>
+
+                <Link href={'/invitations'}>
+                  <DropdownMenuItem>Invitations</DropdownMenuItem>
+                </Link>
+              </DropdownMenuGroup>
+
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut}>
+                <span className="text-red-600">Sign Out</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
