@@ -23,6 +23,7 @@ import { Card } from '@/components/ui/card'
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 export default function StatsPage() {
+  // ... (data and options definitions omitted for brevity) ...
   const data = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
@@ -66,11 +67,13 @@ export default function StatsPage() {
   }
 
   return (
-    <div className="min-h-screen space-y-8 bg-white py-8">
-      {/* Header */}
+    <div className="space-y-8 pt-8">
+      {/* Header section starts */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Stats</h1>
+          {/* ADDED DESCRIPTIVE TEXT */}
+          <p className="text-3xl font-bold mt-0.5">Stats</p>
+          <p className="text-slate-600">Defect Rate</p>
 
           {/* Counts */}
           <div className="mt-8 flex space-x-10">
@@ -96,6 +99,7 @@ export default function StatsPage() {
           </SelectContent>
         </Select>
       </div>
+      {/* Header section ends */}
 
       <Card className="flex h-[400px] w-full items-center justify-center p-6">
         <Bar data={data} options={options} />
