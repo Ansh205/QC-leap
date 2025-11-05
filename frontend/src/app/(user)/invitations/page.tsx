@@ -37,7 +37,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Mail, MoreVertical, Search, Trash2, UserPlus } from 'lucide-react'
 
-type UserRole = 'Owner' | 'Manager' | 'Operator' | 'Auditor'
+type UserRole = 'Owner' | 'Manager' | 'Developer' | 'Auditor'
 type InvitationStatus = 'Pending' | 'Accepted' | 'Expired'
 
 type Invitation = {
@@ -60,7 +60,7 @@ export default function InvitationsPage() {
     {
       id: '2',
       email: 'jane.smith@example.com',
-      role: 'Operator',
+      role: 'Developer',
       status: 'Pending',
       sentDate: '2024-10-20',
     },
@@ -81,7 +81,7 @@ export default function InvitationsPage() {
   // Form state
   const [newEmail, setNewEmail] = useState('')
   const [newPassword, setNewPassword] = useState('')
-  const [newRole, setNewRole] = useState<UserRole>('Operator')
+  const [newRole, setNewRole] = useState<UserRole>('Developer')
 
   const handleSendInvitation = () => {
     if (!newEmail || !newPassword) {
@@ -102,7 +102,7 @@ export default function InvitationsPage() {
     // Reset form
     setNewEmail('')
     setNewPassword('')
-    setNewRole('Operator')
+    setNewRole('Developer')
     setIsDialogOpen(false)
 
     // Here you would typically send the invitation via API
@@ -152,7 +152,7 @@ export default function InvitationsPage() {
         return 'bg-purple-100 text-purple-800'
       case 'Manager':
         return 'bg-blue-100 text-blue-800'
-      case 'Operator':
+      case 'Developer':
         return 'bg-green-100 text-green-800'
       case 'Auditor':
         return 'bg-orange-100 text-orange-800'
@@ -216,7 +216,7 @@ export default function InvitationsPage() {
                   <SelectContent>
                     <SelectItem value="Owner">Owner - Full access and control</SelectItem>
                     <SelectItem value="Manager">Manager - Manage operations and users</SelectItem>
-                    <SelectItem value="Operator">Operator - Daily operations access</SelectItem>
+                    <SelectItem value="Developer">Developer - Daily operations access</SelectItem>
                     <SelectItem value="Auditor">Auditor - Read-only access</SelectItem>
                   </SelectContent>
                 </Select>
@@ -259,7 +259,7 @@ export default function InvitationsPage() {
             <SelectItem value="All">All Roles</SelectItem>
             <SelectItem value="Owner">Owner</SelectItem>
             <SelectItem value="Manager">Manager</SelectItem>
-            <SelectItem value="Operator">Operator</SelectItem>
+            <SelectItem value="Developer">Developer</SelectItem>
             <SelectItem value="Auditor">Auditor</SelectItem>
           </SelectContent>
         </Select>
