@@ -21,6 +21,7 @@ To set up the project locally, ensure you have **Node.js** (LTS version recommen
 
     ```bash
     npm install
+    npm install next-themes sonner
     ```
 
 ## ▶️ Running the Application
@@ -42,5 +43,7 @@ The application will be accessible at:
 |-------------------------|---------------------------------------------------------------------|
 | `/`                    | `src/app/page.tsx`, `src/app/layout.tsx`                            |
 | `/models`              | `src/app/(user)/layout.tsx`, `src/app/(user)/models/page.tsx`        |
-| `/models/QCL-1`        | `src/app/(user)/models/[modelId]/page.tsx`                          |
+| `/models/QCL-1`, `/models/QCL-1?step=sample_images`, `/models/QCL-1?step=generated_images`, `/models/QCL-1?step=training`        | `src/app/(user)/models/[modelId]/page.tsx`                           |
 | `/models/QCL-1/runs`   | `src/app/(user)/models/[modelId]/runs/page.tsx`                     |
+| `/invitation`                     |`src/app/(user)/layout.tsx, src/app/(user)/invitations/page.tsx`
+| `/account`                     |`src/app/(user)/layout.tsx, src/app/(user)/account/page.tsx`
