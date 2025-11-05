@@ -216,7 +216,7 @@ export default function InvitationsPage() {
                   <SelectContent>
                     <SelectItem value="Owner">Owner - Full access and control</SelectItem>
                     <SelectItem value="Manager">Manager - Manage operations and users</SelectItem>
-                    <SelectItem value="Developer">Developer - Daily operations access</SelectItem>
+                    <SelectItem value="Developer">Developer - Model Management</SelectItem>
                     <SelectItem value="Auditor">Auditor - Read-only access</SelectItem>
                   </SelectContent>
                 </Select>
