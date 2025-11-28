@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import List, Tuple, Dict, Optional
 import os
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_MODEL_WEIGHTS_DIR = PROJECT_ROOT / "model_weights"
 
 class MobileNetService:
     """Service for MobileNetV3-based defect classification"""
@@ -353,4 +355,5 @@ class MobileNetService:
 
 
 # Global MobileNet service instance
-mobilenet_service = MobileNetService(model_weights_dir="/home/kabilan/se-project/backend/model_weights")
+# mobilenet_service = MobileNetService(model_weights_dir="/home/kabilan/se-project/backend/model_weights")
+mobilenet_service = MobileNetService()
