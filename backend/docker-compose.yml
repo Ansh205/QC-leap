@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: qc-leap-db
+    environment:
+      POSTGRES_USER: qc_leap_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: qc_leap_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qc_leap_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Celery Broker
+  redis:
+    image: redis:7-alpine
+    container_name: qc-leap-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qc-leap-backend
+    environment:
+      DATABASE_URL: postgresql://qc_leap_user:${DB_PASSWORD:-changeme}@postgres:5432/qc_leap_db
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here-change-in-production}
+      DEBUG: ${DEBUG:-true}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./model_weights:/app/model_weights
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Celery Worker for ML Training
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qc-leap-celery
+    environment:
+      DATABASE_URL: postgresql://qc_leap_user:${DB_PASSWORD:-changeme}@postgres:5432/qc_leap_db
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here-change-in-production}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./model_weights:/app/model_weights
+    depends_on:
+      - postgres
+      - redis
+    command: celery -A app.ml.celery_app worker --loglevel=info
+
+volumes:
+  postgres_data:
+  redis_data:
