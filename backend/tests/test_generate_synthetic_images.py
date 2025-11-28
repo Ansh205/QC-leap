@@ -11,7 +11,7 @@ BASE_URL = "http://localhost:8000/api/v1/models"
 
 # Token copied from the provided attachment; update if you have a different test token
 TEST_TOKEN = (
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjQ0MjkzNzMsInN1YiI6IjEifQ.ASN-MxWaQJ_oF5uOGgCCiO84-cUhw5WCmInAgmP3HDE"
+    ""
 )
 
 HEADERS = {
