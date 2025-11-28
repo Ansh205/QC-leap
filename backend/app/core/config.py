@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    MODEL_WEIGHTS_DIR: str = "model_weights"
     # File Upload
     MAX_UPLOAD_SIZE_MB: int = 100
     UPLOAD_DIR: str = "uploads"

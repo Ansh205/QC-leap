@@ -47,6 +47,7 @@ app.add_middleware(
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+# app.include_router(auth.router, prefix="/api/v1/auth", tags=["authentication"])
 
 
 @app.get("/")
