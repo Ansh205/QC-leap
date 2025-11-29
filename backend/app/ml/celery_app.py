@@ -3,7 +3,13 @@ Celery application for background ML training tasks
 """
 from celery import Celery
 import os
+import certifi
 import multiprocessing
+
+# Fix for SSL certificate verify failed on macOS
+# This must be done before any network calls (like torch.hub.load)
+os.environ['SSL_CERT_FILE'] = certifi.where()
+
 
 # Set multiprocessing start method to 'spawn' for CUDA compatibility
 # This must be done before importing torch or creating any CUDA contexts
