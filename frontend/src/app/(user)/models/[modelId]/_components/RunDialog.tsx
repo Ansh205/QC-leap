@@ -53,14 +53,27 @@ export default function RunDialog({ modelId }: { modelId: number }) {
       // 3. Execute Run
       await runsAPI.execute(run.id)
 
-      // 4. Redirect
-      setOpen(false)
-      router.push(`./${modelId}/runs/${run.id}`)
+      // 4. Poll for completion
+      const pollInterval = setInterval(async () => {
+        try {
+          const updatedRun = await runsAPI.get(run.id)
+          if (updatedRun.status === 'COMPLETED') {
+            clearInterval(pollInterval)
+            setOpen(false)
+            router.push(`./${modelId}/runs/${run.id}`)
+          } else if (updatedRun.status === 'FAILED') {
+            clearInterval(pollInterval)
+            setUploading(false)
+            alert('Run failed')
+          }
+        } catch (e) {
+          console.error('Polling error', e)
+        }
+      }, 1000)
     } catch (err) {
       console.error('Failed to start run', err)
-      // TODO: Show error toast
-    } finally {
       setUploading(false)
+      // TODO: Show error toast
     }
   }
 

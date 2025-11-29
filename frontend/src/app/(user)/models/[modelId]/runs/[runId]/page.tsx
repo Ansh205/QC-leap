@@ -20,7 +20,7 @@ type InferenceResult = {
   id: number
   image_id: number
   prediction: string
-  confidence_score: number
+  confidence: number
   details: any
 }
 
@@ -152,7 +152,7 @@ export default function ModelRunDetailPage() {
                   {result.prediction === 'defective' ? 'Defect Detected' : 'Normal'}
                 </p>
                 <p className="text-sm text-gray-500">
-                  Confidence: {(result.confidence_score * 100).toFixed(1)}%
+                  Confidence: {(result.confidence * 100).toFixed(1)}%
                 </p>
               </CardContent>
             </Card>

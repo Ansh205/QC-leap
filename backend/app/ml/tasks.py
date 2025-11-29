@@ -332,7 +332,7 @@ def execute_run_task(self, run_id: int):
                 
                 # Update result
                 res.confidence = prediction['confidence']
-                res.prediction = prediction['class']
+                res.prediction = prediction['label']
                 res.details = prediction
                 
                 db.commit()

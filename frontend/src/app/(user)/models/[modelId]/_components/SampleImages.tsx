@@ -195,9 +195,14 @@ export default function SampleImages({
   const fetchImages = async () => {
     try {
       const data = await imagesAPI.list(modelId)
+      // Filter out inference and other non-training images
+      const validImages = data.filter(
+        (img: any) => img.image_type === 'normal' || img.image_type === 'defective'
+      )
+
       // Map API response to ImageType
       const mappedImages: ImageType[] = await Promise.all(
-        data.map(async (img: any) => {
+        validImages.map(async (img: any) => {
           let defectBox = undefined
           if (img.image_type === 'defective') {
             // Fetch annotation for defective images
@@ -700,7 +705,6 @@ export default function SampleImages({
   }
 
   const handleDeleteImage = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this image?')) return
     try {
       await imagesAPI.delete(parseInt(id))
       setImages((prev) => prev.filter((img) => img.id !== id))

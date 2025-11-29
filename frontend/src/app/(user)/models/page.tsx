@@ -287,8 +287,9 @@ export default function ModelsPage() {
               {/* Public/Private Badge */}
               <div className="absolute top-2 right-2">
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${model.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
+                    model.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}
                 >
                   {model.isPublic ? (
                     <>
@@ -334,7 +335,7 @@ export default function ModelsPage() {
                 {model.accuracy && (
                   <p>
                     <span className="font-semibold">Accuracy:</span>{' '}
-                    {Number(model.accuracy).toFixed(2)}%
+                    {Number(model.accuracy).toFixed(1)}%
                   </p>
                 )}
               </div>
