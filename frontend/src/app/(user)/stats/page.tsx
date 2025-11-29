@@ -29,11 +29,14 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 export default function StatsPage() {
   const [loading, setLoading] = useState(true)
   const [statsData, setStatsData] = useState<any>(null)
+  const [timeRange, setTimeRange] = useState('7days')
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await stats.getOverview()
+        setLoading(true)
+        const days = parseInt(timeRange.replace('days', ''))
+        const data = await stats.getOverview(days)
         setStatsData(data)
       } catch (error: any) {
         toast.error('Failed to load statistics: ' + error.message)
@@ -43,19 +46,19 @@ export default function StatsPage() {
     }
 
     fetchStats()
-  }, [])
+  }, [timeRange])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="text-primary h-8 w-8 animate-spin" />
       </div>
     )
   }
 
   if (!statsData) {
     return (
-      <div className="text-center py-12">
+      <div className="py-12 text-center">
         <p className="text-muted-foreground">Failed to load statistics</p>
       </div>
     )
@@ -109,23 +112,27 @@ export default function StatsPage() {
       <div className="flex items-start justify-between">
         <div>
           {/* ADDED DESCRIPTIVE TEXT */}
-          <p className="text-3xl font-bold mt-0.5">Stats</p>
+          <p className="mt-0.5 text-3xl font-bold">Stats</p>
           <p className="text-slate-600">Defect Rate</p>
 
           {/* Counts */}
           <div className="mt-8 flex space-x-10">
             <div className="text-center">
-              <p className="text-3xl font-semibold text-red-500">{statsData.total_images?.defective || 0}</p>
+              <p className="text-3xl font-semibold text-red-500">
+                {statsData.total_images?.defective || 0}
+              </p>
               <p className="text-sm font-medium text-red-500">Defective</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-semibold text-green-600">{statsData.total_images?.normal || 0}</p>
+              <p className="text-3xl font-semibold text-green-600">
+                {statsData.total_images?.normal || 0}
+              </p>
               <p className="text-sm font-medium text-green-600">Normal</p>
             </div>
           </div>
         </div>
 
-        <Select defaultValue="7days">
+        <Select value={timeRange} onValueChange={setTimeRange}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder="Last 7 days" />
           </SelectTrigger>

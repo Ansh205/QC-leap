@@ -7,13 +7,17 @@ from app.models.inspection_model import ModelStatus
 class InspectionModelBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
-    num_synthetic_images: int = Field(default=1000, ge=100, le=10000)
+    num_synthetic_images: int = Field(default=1000, ge=1, le=10000)
     enable_human_validation: bool = True
     is_public: bool = False
 
 
-class InspectionModelCreate(InspectionModelBase):
-    pass
+class InspectionModelCreate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    num_synthetic_images: Optional[int] = Field(default=1000, ge=1, le=10000)
+    enable_human_validation: Optional[bool] = True
+    is_public: Optional[bool] = False
 
 
 class InspectionModelUpdate(BaseModel):

@@ -6,9 +6,10 @@ import enum
 
 
 class ImageType(str, enum.Enum):
-    REAL_NORMAL = "real_normal"
-    REAL_DEFECTIVE = "real_defective"
+    REAL_NORMAL = "normal"
+    REAL_DEFECTIVE = "defective"
     SYNTHETIC = "synthetic"
+    inference = "inference"
     TEST = "test"
 
 

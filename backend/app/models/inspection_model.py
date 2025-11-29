@@ -51,3 +51,4 @@ class InspectionModel(Base):
     company = relationship("Company", back_populates="inspection_models")
     images = relationship("Image", back_populates="inspection_model", cascade="all, delete-orphan")
     training_jobs = relationship("TrainingJob", back_populates="inspection_model", cascade="all, delete-orphan", foreign_keys="TrainingJob.inspection_model_id")
+    runs = relationship("ModelRun", back_populates="inspection_model", cascade="all, delete-orphan")

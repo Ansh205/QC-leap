@@ -33,7 +33,7 @@ class NormalImageBalancer:
                 contrast_limit=0.2,
                 p=0.6
             ),
-            A.GaussNoise(var_limit=(10.0, 50.0), p=0.3),
+            # A.GaussNoise(var_limit=(10.0, 50.0), p=0.3),
             A.GaussianBlur(blur_limit=(3, 5), p=0.2),
             A.ColorJitter(
                 brightness=0.2,
@@ -81,7 +81,7 @@ class NormalImageBalancer:
 
         # Calculate how many augmented images we need
         if num_real_normal >= target_count:
-            print(f"✅ Normal class already balanced (no augmentation needed)")
+            print(f"Normal class already balanced (no augmentation needed)")
             return num_real_normal
 
         num_to_generate = target_count - num_real_normal
@@ -118,7 +118,7 @@ class NormalImageBalancer:
             if generated_count % 100 == 0:
                 print(f"  Generated {generated_count}/{num_to_generate} images...")
 
-        print(f"✅ Generated {generated_count} augmented normal images")
+        print(f"Generated {generated_count} augmented normal images")
         print(f"{'='*60}\n")
 
         return num_real_normal + generated_count

@@ -16,7 +16,7 @@ export default function NotificationBell() {
     try {
       const [notifList, count] = await Promise.all([
         notificationsAPI.list(false, 20),
-        notificationsAPI.getUnreadCount()
+        notificationsAPI.getUnreadCount(),
       ])
       setNotifications(notifList)
       setUnreadCount(count)
@@ -74,7 +74,9 @@ export default function NotificationBell() {
       // Refresh notifications
       await fetchNotifications()
       // Show success message
-      alert(`Welcome! You are now a member of ${user.company?.name || 'the company'}.\n\nYou can now access:\n• ${user.permission === 'INSPECT_AND_TRAIN' ? 'Inspection & Training features' : 'Inspection features'}\n• Company resources and models\n• Collaborative workspace`)
+      alert(
+        `Welcome! You are now a member of ${user.company?.name || 'the company'}.\n\nYou can now access:\n• ${user.permission === 'INSPECT_AND_TRAIN' ? 'Inspection & Training features' : 'Inspection features'}\n• Company resources and models\n• Collaborative workspace`
+      )
     } catch (error: any) {
       alert(error.message || 'Failed to accept invitation')
     } finally {
@@ -112,7 +114,7 @@ export default function NotificationBell() {
       {/* Bell Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+        className="relative rounded-full p-2 transition-colors hover:bg-gray-100"
       >
         {unreadCount > 0 ? (
           <BellDot className="h-6 w-6 text-yellow-500" />
@@ -120,7 +122,7 @@ export default function NotificationBell() {
           <Bell className="h-6 w-6" />
         )}
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+          <span className="absolute top-0 right-0 inline-flex translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-full bg-red-600 px-2 py-1 text-xs leading-none font-bold text-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -128,14 +130,14 @@ export default function NotificationBell() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 z-50 max-h-[36rem] overflow-hidden flex flex-col">
+        <div className="absolute right-0 z-50 mt-2 flex max-h-[36rem] w-96 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
           {/* Header */}
-          <div className="px-4 py-3.5 border-b border-gray-200 flex justify-between items-center bg-gradient-to-r from-gray-50 to-white">
+          <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-4 py-3.5">
             <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                className="text-sm font-medium text-blue-600 transition-colors hover:text-blue-700"
               >
                 Mark all read
               </button>
@@ -143,53 +145,59 @@ export default function NotificationBell() {
           </div>
 
           {/* Notifications List */}
-          <div className="overflow-y-auto flex-1">
+          <div className="flex-1 overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="px-4 py-12 text-center">
-                <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">No notifications yet</p>
+                <Bell className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                <p className="text-sm text-gray-500">No notifications yet</p>
               </div>
             ) : (
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`px-4 py-3.5 border-b border-gray-100 hover:bg-gray-50 transition-all ${
-                    !notification.is_read ? 'bg-blue-50/50 border-l-4 border-l-blue-500' : ''
+                  className={`border-b border-gray-100 px-4 py-3.5 transition-all hover:bg-gray-50 ${
+                    !notification.is_read ? 'border-l-4 border-l-blue-500 bg-blue-50/50' : ''
                   }`}
                 >
-                  <div className="flex justify-between items-start mb-1.5">
-                    <h4 className="font-semibold text-gray-900 text-sm">{notification.title}</h4>
-                    <span className="text-xs text-gray-500 ml-2 whitespace-nowrap font-medium">
+                  <div className="mb-1.5 flex items-start justify-between">
+                    <h4 className="text-sm font-semibold text-gray-900">{notification.title}</h4>
+                    <span className="ml-2 text-xs font-medium whitespace-nowrap text-gray-500">
                       {getTimeAgo(notification.created_at)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed">{notification.message}</p>
+                  <p className="text-sm leading-relaxed text-gray-600">{notification.message}</p>
 
                   {/* Invitation Actions */}
-                  {notification.type === 'invitation' && notification.related_id && !notification.is_read && (
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => handleAcceptInvitation(notification.related_id!, notification.id)}
-                        disabled={loading}
-                        className="flex-1 px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => handleDeclineInvitation(notification.related_id!, notification.id)}
-                        disabled={loading}
-                        className="flex-1 px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        Decline
-                      </button>
-                    </div>
-                  )}
+                  {notification.type === 'invitation' &&
+                    notification.related_id &&
+                    !notification.is_read && (
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          onClick={() =>
+                            handleAcceptInvitation(notification.related_id!, notification.id)
+                          }
+                          disabled={loading}
+                          className="flex-1 rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleDeclineInvitation(notification.related_id!, notification.id)
+                          }
+                          disabled={loading}
+                          className="flex-1 rounded-lg bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    )}
 
                   {/* Mark as Read */}
                   {!notification.is_read && notification.type !== 'invitation' && (
                     <button
                       onClick={() => handleMarkAsRead(notification.id)}
-                      className="text-xs text-blue-600 hover:text-blue-700 mt-2 font-medium"
+                      className="mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
                     >
                       Mark as read
                     </button>

@@ -83,8 +83,11 @@ class InspectionModelService:
         # Get user to set company_id
         user = db.query(User).filter(User.id == owner_id).first()
 
+        # Handle auto-generated name
+        initial_name = model_in.name if model_in.name else "New Model"
+
         db_model = InspectionModel(
-            name=model_in.name,
+            name=initial_name,
             description=model_in.description,
             num_synthetic_images=model_in.num_synthetic_images,
             enable_human_validation=model_in.enable_human_validation,
@@ -96,6 +99,13 @@ class InspectionModelService:
         db.add(db_model)
         db.commit()
         db.refresh(db_model)
+
+        # If name was not provided, update it to QCL-{id}
+        if not model_in.name:
+            db_model.name = f"QCL-{db_model.id}"
+            db.commit()
+            db.refresh(db_model)
+
         return db_model
 
     @staticmethod
@@ -145,9 +155,15 @@ class InspectionModelService:
                 except Exception as e:
                     # Log error but continue deletion
                     print(f"Error deleting image file {image.file_path}: {e}")
+        
+        # Fix paths
+        BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
         # 2. Delete model weight files
-        model_weights_dir = Path("/home/kabilan/se-project/backend/model_weights")
+        model_weights_dir = BASE_DIR / "model_weights"
+
+        # 3. Delete uploads directory for this model
+        uploads_dir = BASE_DIR / "uploads"
 
         # Delete MobileNetV3 model weights
         mobilenet_checkpoint = model_weights_dir / f"mobilenet_model_{model_id}.pth"
@@ -158,7 +174,7 @@ class InspectionModelService:
                 print(f"Error deleting MobileNetV3 checkpoint: {e}")
 
         # 3. Delete uploads directory for this model
-        uploads_dir = Path("/home/kabilan/se-project/backend/uploads")
+
         model_upload_dir = uploads_dir / str(db_model.owner_id) / str(model_id)
         if model_upload_dir.exists():
             try:

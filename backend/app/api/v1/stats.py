@@ -7,6 +7,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.inspection_model import InspectionModel
 from app.models.image import Image, ImageType
+from app.models.training_job import TrainingStatus
 from app.models.training_job import TrainingJob
 
 router = APIRouter()
@@ -14,6 +15,7 @@ router = APIRouter()
 
 @router.get("/overview")
 def get_stats_overview(
+    days: int = 7,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -60,20 +62,20 @@ def get_stats_overview(
 
     completed_jobs = db.query(TrainingJob).filter(
         TrainingJob.inspection_model_id.in_(model_ids),
-        TrainingJob.status == 'completed'
+        TrainingJob.status == TrainingStatus.COMPLETED  
     ).count() if model_ids else 0
 
     failed_jobs = db.query(TrainingJob).filter(
         TrainingJob.inspection_model_id.in_(model_ids),
-        TrainingJob.status == 'failed'
+        TrainingJob.status == TrainingStatus.FAILED   
     ).count() if model_ids else 0
 
-    # Daily inspection stats for the last 7 days
-    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    # Daily inspection stats
+    start_date = datetime.utcnow() - timedelta(days=days)
 
     daily_stats = []
-    for i in range(7):
-        day = seven_days_ago + timedelta(days=i)
+    for i in range(days):
+        day = start_date + timedelta(days=i)
         day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
         day_end = day_start + timedelta(days=1)
 

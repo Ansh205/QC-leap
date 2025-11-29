@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional, Dict
 from datetime import datetime
 from app.models.training_job import TrainingJob, JobType, TrainingStatus, JobStatus
-from app.ml.tasks import train_model_task
+from app.ml.tasks import train_model_task, generate_synthetic_task
 
 
 class TrainingJobService:
@@ -49,7 +49,10 @@ class TrainingJobService:
 
         # Start training task if requested
         if start_immediately:
-            TrainingJobService.start_training(db, db_job.id)
+            if job_type == JobType.SYNTHETIC_GENERATION:
+                TrainingJobService.start_synthetic_generation(db, db_job.id)
+            else:
+                TrainingJobService.start_training(db, db_job.id)
             db.refresh(db_job)
 
         return db_job
@@ -66,6 +69,29 @@ class TrainingJobService:
 
         # Dispatch to Celery
         task = train_model_task.apply_async(args=[job_id])
+
+        # Update job with Celery task ID
+        db_job.celery_task_id = task.id
+        db_job.status = TrainingStatus.PENDING
+        db.commit()
+        db.refresh(db_job)
+
+        return db_job
+
+    @staticmethod
+    def start_synthetic_generation(db: Session, job_id: int) -> Optional[TrainingJob]:
+        """Start synthetic generation job by dispatching to Celery"""
+        db_job = TrainingJobService.get_by_id(db, job_id)
+        if not db_job:
+            return None
+
+        if db_job.status != TrainingStatus.PENDING:
+            return db_job
+
+        # Dispatch to Celery
+        print(f"Dispatching generate_synthetic_task for job {job_id}")
+        task = generate_synthetic_task.apply_async(args=[job_id])
+        print(f"Task dispatched. ID: {task.id}")
 
         # Update job with Celery task ID
         db_job.celery_task_id = task.id

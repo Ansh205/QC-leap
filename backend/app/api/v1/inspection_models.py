@@ -166,7 +166,7 @@ def start_training(
 
     # Check if model is in correct state to start training
     from app.models.inspection_model import ModelStatus
-    if model.status not in [ModelStatus.CREATED, ModelStatus.AWAITING_VALIDATION, ModelStatus.FAILED]:
+    if model.status not in [ModelStatus.CREATED, ModelStatus.AWAITING_VALIDATION, ModelStatus.FAILED, ModelStatus.READY]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Model is in {model.status} state and cannot start training"
@@ -192,39 +192,51 @@ def start_training(
     }
 
 
-@router.post("/{model_id}/generate-synthetic", response_model=InspectionModelResponse)
+@router.post("/{model_id}/generate-synthetic")
 def generate_synthetic_images(
     model_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Generate synthetic images using Copy-Paste augmentation"""
+    """
+    Start synthetic image generation for a model
+    """
+    print(f"Endpoint hit: generate_synthetic_images for model {model_id}")
     model = inspection_model_service.get_by_id(db=db, model_id=model_id)
     if not model:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Inspection model not found"
-        )
-
-    # Check ownership
+        raise HTTPException(status_code=404, detail="Model not found")
+    
     if model.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
+        raise HTTPException(status_code=403, detail="Not authorized")
 
-    # Update model status to generating_data
+    # Update model status immediately
     from app.models.inspection_model import ModelStatus
-    updated_model = inspection_model_service.update(
+    model.status = ModelStatus.GENERATING_DATA
+    db.commit()
+
+    # Create training job for synthetic generation
+    from app.services.training_job_service import training_job_service
+    from app.models.training_job import JobType
+
+    # Log Redis configuration
+    from app.ml.celery_app import celery_app
+    print(f"API using Redis URL: {os.getenv('REDIS_URL', 'Not Set')}")
+    print(f"Celery Broker URL: {celery_app.conf.broker_url}")
+
+    training_job = training_job_service.create(
         db=db,
-        model_id=model_id,
-        model_update=InspectionModelUpdate(status=ModelStatus.GENERATING_DATA)
+        job_type=JobType.SYNTHETIC_GENERATION,
+        inspection_model_id=model_id,
+        start_immediately=True
     )
 
-    # Note: This endpoint is for standalone synthetic generation
-    # Full training pipeline is handled by /start-training endpoint
-
-    return updated_model
+    return {
+        "message": "Synthetic generation started successfully",
+        "model_id": model_id,
+        "training_job_id": training_job.id,
+        "status": training_job.status,
+        "celery_task_id": training_job.celery_task_id
+    }
 
 
 @router.get("/{model_id}/statistics")

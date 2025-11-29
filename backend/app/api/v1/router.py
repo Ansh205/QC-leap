@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import auth, users, inspection_models, health, images, annotations, invitations, company, notifications, stats, chatbot
+from app.api.v1 import auth, users, inspection_models, health, images, annotations, invitations, company, notifications, stats, chatbot, runs
 
 api_router = APIRouter()
 
@@ -14,3 +14,4 @@ api_router.include_router(images.router, prefix="/images", tags=["images"])
 api_router.include_router(annotations.router, prefix="/annotations", tags=["annotations"])
 api_router.include_router(stats.router, prefix="/stats", tags=["stats"])
 api_router.include_router(chatbot.router, prefix="/chatbot", tags=["chatbot"])
+api_router.include_router(runs.router, tags=["runs"])

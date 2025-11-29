@@ -7,7 +7,7 @@ from app.models.user import User
 from app.models.inspection_model import InspectionModel, ModelStatus
 from app.models.training_job import TrainingJob, TrainingStatus
 from app.models.image import Image, ImageType
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any
 
 
@@ -105,7 +105,8 @@ def build_user_context(db: Session, user: User) -> str:
                 if job.current_stage:
                     context_parts.append(f"    - Stage: {job.current_stage}")
                 if job.started_at:
-                    elapsed = datetime.utcnow() - job.started_at
+                    # FIX: Use timezone-aware datetime for comparison
+                    elapsed = datetime.now(timezone.utc) - job.started_at
                     context_parts.append(f"    - Running for: {elapsed.seconds // 60} minutes")
         else:
             context_parts.append("- No active training jobs")
@@ -158,7 +159,8 @@ def build_user_context(db: Session, user: User) -> str:
         context_parts.append(f"  * Synthetic Images: {synthetic_count}")
 
         # Images uploaded in last 7 days
-        week_ago = datetime.utcnow() - timedelta(days=7)
+        # FIX: Use timezone-aware datetime for comparison
+        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         recent_uploads = [i for i in all_images if i.created_at >= week_ago]
         if recent_uploads:
             context_parts.append(f"- Uploaded in Last 7 Days: {len(recent_uploads)}")

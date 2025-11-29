@@ -13,8 +13,10 @@ except RuntimeError:
     # Already set, ignore
     pass
 
+from app.core.config import settings
+
 # Redis connection for Celery broker and backend
-REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+REDIS_URL = settings.REDIS_URL
 
 # Create Celery app
 celery_app = Celery(

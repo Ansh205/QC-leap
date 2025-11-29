@@ -15,7 +15,8 @@ from app.core.deps import get_current_active_user, get_current_active_user_optio
 from app.database import get_db
 from app.models.user import User
 from app.models.image import Image, ImageType
-from app.models.inspection_model import InspectionModel
+from app.models.inspection_model import InspectionModel, ModelStatus
+from app.models.inference_result import InferenceResult
 from app.schemas.image import ImageResponse
 from app.utils.image_processing import validate_image_file, organize_uploaded_files
 from app.services.inspection_model_service import inspection_model_service
@@ -118,7 +119,10 @@ async def upload_images(
     if uploaded_images and not model.thumbnail_url:
         first_image = uploaded_images[0]
         model.thumbnail_url = f"/api/v1/images/{first_image.id}/file"
-        db.commit()
+    
+    # Update model status to CREATED to indicate data has changed
+    model.status = ModelStatus.CREATED
+    db.commit()
 
     return uploaded_images
 
@@ -242,6 +246,8 @@ async def upload_images_from_zip(
                 db.add(image)
                 uploaded_images.append(image)
 
+    # Update model status to CREATED to indicate data has changed
+    model.status = ModelStatus.CREATED
     db.commit()
 
     return uploaded_images
@@ -549,8 +555,14 @@ def delete_image(
     if os.path.exists(image.file_path):
         os.remove(image.file_path)
 
+    # Delete associated inference results
+    db.query(InferenceResult).filter(InferenceResult.image_id == image.id).delete()
+
     # Delete from database
     db.delete(image)
+    
+    # Update model status to CREATED to indicate data has changed
+    model.status = ModelStatus.CREATED
     db.commit()
 
     return {"message": "Image deleted successfully"}

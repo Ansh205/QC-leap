@@ -1,257 +1,190 @@
 """
-Copy-Paste Augmentation Service
-Intelligent defect synthesis using copy-paste augmentation and Poisson blending
+Copy-Paste Augmentation Service - Fail-Safe Edition
 """
 import cv2
 import numpy as np
 import albumentations as A
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List
 import random
 import os
 
-
 class CopyPasteService:
-    """Service for copy-paste augmentation of defects"""
-
     def __init__(self):
-        # Augmentation pipeline for defect patches
+        # Augmentation pipeline
         self.defect_augment = A.Compose([
-            A.RandomRotate90(p=0.7),
+            A.RandomRotate90(p=0.5),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
-            A.Affine(
-                scale=(0.7, 1.3),      # scale_limit=0.3 -> (1-0.3, 1+0.3)
-                translate_percent=0.1,  # shift_limit=0.1
-                rotate=(-180, 180),     # rotate_limit=180
-                p=0.7
-            ),
-            A.RandomBrightnessContrast(
-                brightness_limit=0.2,
-                contrast_limit=0.2,
-                p=0.5
-            ),
-            A.GaussianBlur(blur_limit=(3, 5), p=0.2)
+            A.RandomBrightnessContrast(p=0.2),
         ])
 
-    def extract_defect_library(
-        self,
-        defect_images_dir: str,
-        masks_dir: str,
-        output_dir: str
-    ) -> int:
-        """
-        Extract defects from annotated images using masks
-
-        Args:
-            defect_images_dir: Directory with defective images
-            masks_dir: Directory with corresponding masks
-            output_dir: Where to save extracted defect patches
-
-        Returns:
-            Number of defects extracted
-        """
+    def extract_defect_library(self, defect_images_dir: str, masks_dir: str, output_dir: str) -> int:
+        """Extract defects using masks"""
         os.makedirs(output_dir, exist_ok=True)
-
         defect_count = 0
-
-        # Find all defect images
+        
         defect_images = []
-        for ext in ['*.jpg', '*.jpeg', '*.png', '*.JPG', '*.JPEG', '*.PNG']:
+        # Find all images (case insensitive extensions)
+        for ext in ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG', '*.JPEG']:
             defect_images.extend(Path(defect_images_dir).glob(ext))
 
-        print(f"Found {len(defect_images)} defective images")
+        print(f"  - Found {len(defect_images)} defective images to process")
 
         for img_path in defect_images:
-            # Find corresponding mask
-            img_stem = img_path.stem
-            mask_path = Path(masks_dir) / f"{img_stem}.png"
+            # Try to find matching mask (exact name or with _mask suffix)
+            possible_names = [img_path.name, img_path.stem + ".png", img_path.stem + "_mask.png"]
+            mask_path = next((Path(masks_dir) / m for m in possible_names if (Path(masks_dir) / m).exists()), None)
 
-            if not mask_path.exists():
-                print(f"⚠️  No mask found for {img_path.name}, skipping")
+            if not mask_path:
+                print(f"  -Missing mask for {img_path.name}")
                 continue
 
-            # Load image and mask
+            # Read images
             image = cv2.imread(str(img_path))
             mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
 
-            if image is None or mask is None:
-                print(f"⚠️  Failed to load {img_path.name} or its mask")
-                continue
+            if image is None or mask is None: continue
 
-            # Find defect region bounding box
+            # Find defect bounding box
             coords = cv2.findNonZero(mask)
-            if coords is None:
-                print(f"⚠️  No defect region in mask for {img_path.name}")
-                continue
-
+            if coords is None: continue
+            
             x, y, w, h = cv2.boundingRect(coords)
+            
+            # Crop
+            defect = image[y:y+h, x:x+w]
+            defect_mask = mask[y:y+h, x:x+w]
 
-            # Add padding around defect (20% on each side)
-            pad = int(max(w, h) * 0.2)
-            x1 = max(0, x - pad)
-            y1 = max(0, y - pad)
-            x2 = min(image.shape[1], x + w + pad)
-            y2 = min(image.shape[0], y + h + pad)
+            if defect.size == 0: continue
 
-            # Extract defect patch and mask
-            defect_patch = image[y1:y2, x1:x2]
-            defect_mask = mask[y1:y2, x1:x2]
-
-            # Save defect patch and its mask
-            patch_path = Path(output_dir) / f"defect_{img_stem}.png"
-            mask_out_path = Path(output_dir) / f"defect_{img_stem}_mask.png"
-
-            cv2.imwrite(str(patch_path), defect_patch)
-            cv2.imwrite(str(mask_out_path), defect_mask)
-
+            # Save extraction
+            cv2.imwrite(str(Path(output_dir) / f"defect_{defect_count}.png"), defect)
+            cv2.imwrite(str(Path(output_dir) / f"defect_{defect_count}_mask.png"), defect_mask)
             defect_count += 1
 
-        print(f"✅ Extracted {defect_count} defect patches to {output_dir}")
+        print(f"  - Extracted {defect_count} unique defects")
         return defect_count
 
-    def generate_synthetic_images(
-        self,
-        defect_library_dir: str,
-        background_images_dir: str,
-        output_dir: str,
-        num_images: int = 1000
-    ) -> List[str]:
-        """
-        Generate synthetic defective images using copy-paste
+    def generate_synthetic_images(self, defect_dir: str, bg_dir: str, out_dir: str, num_images: int = 100, callback=None) -> List[str]:
+        """Generate synthetic images"""
+        os.makedirs(out_dir, exist_ok=True)
+        
+        # Load all defect patches
+        defect_paths = list(Path(defect_dir).glob("defect_*.png"))
+        defect_paths = [d for d in defect_paths if "_mask" not in d.name]
+        
+        # Load all background images
+        bg_paths = []
+        for ext in ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG', '*.JPEG']:
+            bg_paths.extend(Path(bg_dir).glob(ext))
 
-        Args:
-            defect_library_dir: Directory with extracted defect patches
-            background_images_dir: Directory with clean/normal cashew images
-            output_dir: Where to save synthetic images
-            num_images: Number of synthetic images to generate
+        if not defect_paths:
+            print("  - No defects found in library!")
+            return []
+        if not bg_paths:
+            print("  - No background images found!")
+            return []
 
-        Returns:
-            List of paths to generated images
-        """
-        os.makedirs(output_dir, exist_ok=True)
+        print(f"  - Generating {num_images} images using {len(defect_paths)} defects and {len(bg_paths)} backgrounds...")
+        
+        # Pre-load images to speed up generation
+        # Limit cache size if too many images to avoid OOM
+        MAX_CACHE = 50
+        
+        defects_cache = []
+        for p in defect_paths[:MAX_CACHE]:
+            img = cv2.imread(str(p))
+            mask = cv2.imread(str(p).replace(".png", "_mask.png"), cv2.IMREAD_GRAYSCALE)
+            if img is not None and mask is not None:
+                defects_cache.append((img, mask))
+                
+        bg_cache = []
+        for p in bg_paths[:MAX_CACHE]:
+            img = cv2.imread(str(p))
+            if img is not None:
+                bg_cache.append(img)
+                
+        if not defects_cache or not bg_cache:
+            print("  - Failed to load images for cache")
+            return []
 
-        # Load defect library
-        defect_patches = []
-        for patch_file in Path(defect_library_dir).glob("defect_*.png"):
-            if "_mask" not in str(patch_file):
-                mask_file = Path(str(patch_file).replace(".png", "_mask.png"))
-                if mask_file.exists():
-                    defect_patches.append((str(patch_file), str(mask_file)))
-
-        if len(defect_patches) == 0:
-            raise ValueError(f"No defect patches found in {defect_library_dir}")
-
-        print(f"Loaded {len(defect_patches)} defect patches from library")
-
-        # Load background images
-        backgrounds = []
-        for ext in ['*.jpg', '*.jpeg', '*.png', '*.JPG', '*.JPEG', '*.PNG']:
-            backgrounds.extend(list(Path(background_images_dir).glob(ext)))
-
-        if len(backgrounds) == 0:
-            raise ValueError(f"No background images found in {background_images_dir}")
-
-        print(f"Loaded {len(backgrounds)} background images")
-        print(f"Generating {num_images} synthetic defective images...")
-
-        generated_paths = []
-
-        for i in range(num_images):
-            # Pick random background and defect
-            bg_path = random.choice(backgrounds)
-            defect_patch_path, defect_mask_path = random.choice(defect_patches)
-
-            # Load images
-            background = cv2.imread(str(bg_path))
-            defect_patch = cv2.imread(defect_patch_path)
-            defect_mask = cv2.imread(defect_mask_path, cv2.IMREAD_GRAYSCALE)
-
-            if background is None or defect_patch is None or defect_mask is None:
-                continue
-
-            # Augment the defect patch
-            augmented = self.defect_augment(
-                image=defect_patch,
-                mask=defect_mask
-            )
-            aug_defect = augmented['image']
-            aug_mask = augmented['mask']
-
-            # Ensure mask is binary
-            _, aug_mask = cv2.threshold(aug_mask, 127, 255, cv2.THRESH_BINARY)
-
-            # Find a random position on the background
-            h_bg, w_bg = background.shape[:2]
-            h_d, w_d = aug_defect.shape[:2]
-
-            # Ensure defect fits on background
-            if h_d >= h_bg * 0.8 or w_d >= w_bg * 0.8:
-                # Defect too large, resize to 30% of background size
-                target_size = min(h_bg, w_bg) // 3
-                scale = target_size / max(h_d, w_d)
-                new_h = int(h_d * scale)
-                new_w = int(w_d * scale)
-                aug_defect = cv2.resize(aug_defect, (new_w, new_h))
-                aug_mask = cv2.resize(aug_mask, (new_w, new_h))
-                h_d, w_d = new_h, new_w
-
-            # Calculate safe placement range
-            max_x = w_bg - w_d
-            max_y = h_bg - h_d
-
-            if max_x < 1 or max_y < 1:
-                # Still too large, skip this image
-                print(f"⚠️  Defect too large after resize, skipping")
-                continue
-
-            # Random position (prefer center region for cashews)
-            center_y, center_x = h_bg // 2, w_bg // 2
-            offset_x = min(max_x // 2, w_bg // 4)
-            offset_y = min(max_y // 2, h_bg // 4)
-
-            x_min = max(0, center_x - offset_x)
-            x_max = min(max_x, center_x + offset_x)
-            y_min = max(0, center_y - offset_y)
-            y_max = min(max_y, center_y + offset_y)
-
-            x = random.randint(x_min, max(x_min, x_max))
-            y = random.randint(y_min, max(y_min, y_max))
-
-            # Poisson blending for seamless paste
+        generated = []
+        count = 0
+        
+        while count < num_images:
             try:
-                # Create center point for Poisson blending
-                center = (x + w_d // 2, y + h_d // 2)
+                # 1. Load Random Components from Cache
+                bg = random.choice(bg_cache).copy() # Copy to avoid modifying cache
+                fg, mask = random.choice(defects_cache)
+                fg = fg.copy()
+                mask = mask.copy()
 
-                # Blend the defect onto background
-                result = cv2.seamlessClone(
-                    aug_defect,
-                    background,
-                    aug_mask,
-                    center,
-                    cv2.MIXED_CLONE  # Better for defects (preserves gradients)
-                )
+                # 2. Augment Defect
+                aug = self.defect_augment(image=fg, mask=mask)
+                fg, mask = aug['image'], aug['mask']
+
+                # 3. Smart Resize (Ensure defect fits inside background)
+                h_bg, w_bg = bg.shape[:2]
+                h_fg, w_fg = fg.shape[:2]
+
+                # Max defect size is 40% of background
+                max_scale = 0.4
+                if h_fg > h_bg * max_scale or w_fg > w_bg * max_scale:
+                    scale = min((h_bg * max_scale) / h_fg, (w_bg * max_scale) / w_fg)
+                    fg = cv2.resize(fg, (0,0), fx=scale, fy=scale)
+                    mask = cv2.resize(mask, (0,0), fx=scale, fy=scale)
+                    h_fg, w_fg = fg.shape[:2]
+
+                # 4. Random Position
+                if w_bg - w_fg <= 0 or h_bg - h_fg <= 0: continue # Skip if still too big
+                x = random.randint(0, w_bg - w_fg)
+                y = random.randint(0, h_bg - h_fg)
+                
+                # 5. Fail-Safe Blending (Direct Overlay)
+                # Create Region of Interest (ROI)
+                roi = bg[y:y+h_fg, x:x+w_fg]
+                
+                # Ensure mask is binary and 3 channels
+                _, mask_bin = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)
+                mask_inv = cv2.bitwise_not(mask_bin)
+                
+                # Black-out the area of the defect in the ROI
+                img_bg = cv2.bitwise_and(roi, roi, mask=mask_inv)
+                
+                # Take only the region of the defect from the defect image
+                img_fg = cv2.bitwise_and(fg, fg, mask=mask_bin)
+                
+                # Combine
+                dst = cv2.add(img_bg, img_fg)
+                
+                # Place back into main image
+                bg[y:y+h_fg, x:x+w_fg] = dst
+
+                # 7. Validation Check
+                if np.mean(bg) < 5: # If image is Pitch Black
+                    print("    - Skipped black image generation")
+                    continue
+
+                # Save
+                out_path = Path(out_dir) / f"syn_{count}.jpg"
+                cv2.imwrite(str(out_path), bg)
+                generated.append(str(out_path))
+                
+                if callback:
+                    callback(str(out_path), count + 1, num_images)
+                
+                count += 1
+                
+                if count % 50 == 0:
+                    print(f"    - Generated {count}/{num_images}")
+
             except Exception as e:
-                # Fallback to simple paste if Poisson fails
-                print(f"⚠️  Poisson blending failed for image {i}, using alpha blending")
-                result = background.copy()
-                mask_3ch = cv2.cvtColor(aug_mask, cv2.COLOR_GRAY2BGR) / 255.0
-                result[y:y+h_d, x:x+w_d] = (
-                    result[y:y+h_d, x:x+w_d] * (1 - mask_3ch) +
-                    aug_defect * mask_3ch
-                ).astype(np.uint8)
+                print(f"    - Error: {e}")
+                import traceback
+                traceback.print_exc()
+                continue
 
-            # Save synthetic image
-            output_path = Path(output_dir) / f"synthetic_{i:04d}.png"
-            cv2.imwrite(str(output_path), result)
-            generated_paths.append(str(output_path))
+        return generated
 
-            if (i + 1) % 100 == 0:
-                print(f"  Generated {i + 1}/{num_images} images...")
-
-        print(f"✅ Generated {len(generated_paths)} synthetic images")
-        return generated_paths
-
-
-# Global copy-paste service instance
 copy_paste_service = CopyPasteService()
