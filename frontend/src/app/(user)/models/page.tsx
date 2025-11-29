@@ -201,7 +201,7 @@ export default function ModelsPage() {
       <div className="flex justify-between">
         <div>
           <p className="text-3xl font-bold">Inspection Models</p>
-          <p className="text-slate-600">{currentUser?.company.name}</p>
+          <p className="text-slate-600">{currentUser?.company?.name}</p>
         </div>
 
         <Button className="w-48" onClick={handleCreateNewModel}>
@@ -287,9 +287,8 @@ export default function ModelsPage() {
               {/* Public/Private Badge */}
               <div className="absolute top-2 right-2">
                 <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
-                    model.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${model.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}
                 >
                   {model.isPublic ? (
                     <>
