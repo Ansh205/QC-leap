@@ -1,0 +1,12 @@
+# Dev script files
+.dev_pids
+backend.log
+frontend.log
+
+# Old scaffold frontend (backup)
+frontend_old_scaffold/
+
+# Local development scripts and backups
+dev.sh
+dev.sh.backup
+*.rdb

@@ -11,13 +11,24 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Trash2, Image as ImageIcon, ImageUp, Edit, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
+<<<<<<< HEAD
+=======
+import { images as imagesAPI, annotations as annotationsAPI } from '@/lib/api'
+>>>>>>> master
 
 type ImageType = {
   id: string
   url: string
+<<<<<<< HEAD
   type: 'defective' | 'non-defective'
   defectBox?: { x: number; y: number; width: number; height: number }
   file?: File
+=======
+  type: 'defective' | 'normal'
+  defectBox?: { x: number; y: number; width: number; height: number }
+  file?: File
+  is_synthetic?: boolean
+>>>>>>> master
 }
 
 type PendingImage = {
@@ -126,8 +137,13 @@ function ImageCard({
   }, [image])
 
   return (
+<<<<<<< HEAD
     <Card className="relative h-64">
       <div className="absolute top-2 right-2 z-10 flex gap-2">
+=======
+    <Card className="group relative h-64">
+      <div className="absolute top-2 right-2 z-10 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+>>>>>>> master
         {image.type === 'defective' && onEdit && (
           <button
             onClick={onEdit}
@@ -153,14 +169,29 @@ function ImageCard({
   )
 }
 
+<<<<<<< HEAD
 export default function SampleImages() {
   const [activeTab, setActiveTab] = useState<'defective' | 'non-defective'>('defective')
+=======
+export default function SampleImages({
+  modelId,
+  onModelUpdate,
+}: {
+  modelId: number
+  onModelUpdate?: () => void
+}) {
+  const [activeTab, setActiveTab] = useState<'defective' | 'normal'>('defective')
+>>>>>>> master
   const [images, setImages] = useState<ImageType[]>([])
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([])
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingImageId, setEditingImageId] = useState<string | null>(null)
   const [imageLoaded, setImageLoaded] = useState(false)
+<<<<<<< HEAD
+=======
+  const [loading, setLoading] = useState(false)
+>>>>>>> master
 
   // Zoom and Pan state
   const [viewportTransform, setViewportTransform] = useState({ x: 0, y: 0, scale: 1 })
@@ -175,15 +206,91 @@ export default function SampleImages() {
   const [currentRect, setCurrentRect] = useState({ x: 0, y: 0, width: 0, height: 0 })
 
   const defectiveCount = images.filter((img) => img.type === 'defective').length
+<<<<<<< HEAD
   const nonDefectiveCount = images.filter((img) => img.type === 'non-defective').length
   const filteredImages = images.filter((img) => img.type === activeTab)
 
+=======
+  const normalCount = images.filter((img) => img.type === 'normal').length
+  const filteredImages = images.filter((img) => img.type === activeTab)
+
+  // Fetch images on mount
+  useEffect(() => {
+    fetchImages()
+  }, [modelId])
+
+  const fetchImages = async () => {
+    try {
+      const data = await imagesAPI.list(modelId)
+      // Filter out inference and other non-training images
+      const validImages = data.filter(
+        (img: any) => img.image_type === 'normal' || img.image_type === 'defective'
+      )
+
+      // Map API response to ImageType
+      const mappedImages: ImageType[] = await Promise.all(
+        validImages.map(async (img: any) => {
+          let defectBox = undefined
+          if (img.image_type === 'defective') {
+            // Fetch annotation for defective images
+            try {
+              const annotation: any = await annotationsAPI.getByImage(img.id)
+              if (annotation && annotation.canvas_data) {
+                const canvasData =
+                  typeof annotation.canvas_data === 'string'
+                    ? JSON.parse(annotation.canvas_data)
+                    : annotation.canvas_data
+
+                if (canvasData.polygons && canvasData.polygons.length > 0) {
+                  const points = canvasData.polygons[0].points
+                  // Convert polygon points back to rect (simplified assumption for now)
+                  const xs = points.map((p: any) => p[0])
+                  const ys = points.map((p: any) => p[1])
+                  const minX = Math.min(...xs)
+                  const minY = Math.min(...ys)
+                  const maxX = Math.max(...xs)
+                  const maxY = Math.max(...ys)
+                  defectBox = {
+                    x: minX,
+                    y: minY,
+                    width: maxX - minX,
+                    height: maxY - minY,
+                  }
+                }
+              }
+            } catch (e) {
+              // No annotation found or error
+            }
+          }
+
+          return {
+            id: img.id.toString(),
+            url: imagesAPI.getImageUrl(img.id),
+            type: img.image_type === 'normal' ? 'normal' : 'defective',
+            defectBox,
+            is_synthetic: img.is_synthetic,
+          }
+        })
+      )
+      setImages(mappedImages.filter((img) => !img.is_synthetic))
+    } catch (err) {
+      console.error('Failed to fetch images', err)
+    }
+  }
+
+>>>>>>> master
   const handleUploadClick = () => {
     fileInputRef.current?.click()
   }
 
+<<<<<<< HEAD
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+=======
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+>>>>>>> master
 
     if (activeTab === 'defective') {
       const pending = files.map((file) => ({
@@ -197,6 +304,7 @@ export default function SampleImages() {
       setImageLoaded(false)
       resetViewport()
     } else {
+<<<<<<< HEAD
       const newImages: ImageType[] = files.map((file) => ({
         id: crypto.randomUUID(),
         url: URL.createObjectURL(file),
@@ -204,6 +312,20 @@ export default function SampleImages() {
         file,
       }))
       setImages((prev) => [...prev, ...newImages])
+=======
+      // Normal images - upload immediately
+      try {
+        setLoading(true)
+        await imagesAPI.upload(modelId, files, 'normal')
+        await fetchImages()
+        if (onModelUpdate) onModelUpdate()
+      } catch (err) {
+        console.error('Failed to upload normal images', err)
+        alert('Failed to upload images')
+      } finally {
+        setLoading(false)
+      }
+>>>>>>> master
     }
 
     e.target.value = ''
@@ -274,6 +396,11 @@ export default function SampleImages() {
 
     const canvas = canvasRef.current
     const img = new Image()
+<<<<<<< HEAD
+=======
+    // Add crossOrigin to allow canvas manipulation of remote images
+    img.crossOrigin = 'anonymous'
+>>>>>>> master
 
     img.onload = () => {
       imageRef.current = img
@@ -455,6 +582,7 @@ export default function SampleImages() {
     resetViewport()
   }
 
+<<<<<<< HEAD
   const handleSaveDefect = () => {
     if (!canvasRef.current || !imageRef.current) return
 
@@ -495,6 +623,97 @@ export default function SampleImages() {
       }
 
       setImages((prev) => [...prev, newImage])
+=======
+  const uploadAndAnnotate = async (
+    file: File,
+    rect: { x: number; y: number; width: number; height: number }
+  ) => {
+    // 1. Upload Image
+    const uploaded = await imagesAPI.upload(modelId, [file], 'defective')
+    const imageId = uploaded[0].id
+
+    // 2. Create Annotation
+    // Ensure rect has positive width/height
+    const x = Math.min(rect.x, rect.x + rect.width)
+    const y = Math.min(rect.y, rect.y + rect.height)
+    const w = Math.abs(rect.width)
+    const h = Math.abs(rect.height)
+
+    const canvasData = {
+      image_width: imageRef.current?.naturalWidth || 0,
+      image_height: imageRef.current?.naturalHeight || 0,
+      polygons: [
+        {
+          points: [
+            [x, y],
+            [x + w, y],
+            [x + w, y + h],
+            [x, y + h],
+          ],
+          label: 'defect',
+        },
+      ],
+    }
+
+    await annotationsAPI.createManual(imageId, 'defect', canvasData)
+  }
+
+  const handleSaveDefect = async () => {
+    if (!canvasRef.current || !imageRef.current) return
+
+    try {
+      setLoading(true)
+
+      if (editingImageId) {
+        // Update existing annotation (not fully implemented in backend yet, so maybe just re-create?)
+        // For now, let's assume we can just update local state or re-upload if needed.
+        // But since we can't easily update the image file, we might just update the annotation.
+        // TODO: Implement annotation update logic
+        alert('Update not fully implemented yet')
+      } else {
+        const currentPending = pendingImages[currentImageIndex]
+        await uploadAndAnnotate(currentPending.file, currentRect)
+
+        if (currentImageIndex < pendingImages.length - 1) {
+          setCurrentImageIndex((prev) => prev + 1)
+          setCurrentRect({ x: 0, y: 0, width: 0, height: 0 })
+          setImageLoaded(false)
+          resetViewport()
+        } else {
+          setIsDialogOpen(false)
+          setPendingImages([])
+          setCurrentImageIndex(0)
+          setImageLoaded(false)
+          resetViewport()
+          fetchImages()
+          if (onModelUpdate) onModelUpdate()
+        }
+      }
+    } catch (err) {
+      console.error('Failed to save defect', err)
+      alert('Failed to save defect')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSkipImage = async () => {
+    if (!imageRef.current) return
+
+    try {
+      setLoading(true)
+      const currentPending = pendingImages[currentImageIndex]
+
+      // Full image annotation
+      const fullRect = {
+        x: 0,
+        y: 0,
+        width: imageRef.current.naturalWidth,
+        height: imageRef.current.naturalHeight,
+      }
+
+      await uploadAndAnnotate(currentPending.file, fullRect)
+>>>>>>> master
 
       if (currentImageIndex < pendingImages.length - 1) {
         setCurrentImageIndex((prev) => prev + 1)
@@ -507,6 +726,7 @@ export default function SampleImages() {
         setCurrentImageIndex(0)
         setImageLoaded(false)
         resetViewport()
+<<<<<<< HEAD
       }
     }
   }
@@ -555,6 +775,66 @@ export default function SampleImages() {
     resetViewport()
   }
 
+=======
+        fetchImages()
+        if (onModelUpdate) onModelUpdate()
+      }
+    } catch (err) {
+      console.error('Failed to skip (save full) image', err)
+      alert('Failed to save image')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSkipAll = async () => {
+    try {
+      setLoading(true)
+      // Process all remaining images as full-image defects
+      // We need to load each image to get dimensions, or just upload and assume full size?
+      // Better to load them. But for speed, maybe we can just upload and let backend handle?
+      // No, we need dimensions for canvas_data.
+
+      // For now, let's just process them one by one in background?
+      // Or just iterate.
+
+      const remaining = pendingImages.slice(currentImageIndex)
+
+      for (const pending of remaining) {
+        // Load image to get dimensions
+        const img = new Image()
+        img.src = pending.url
+        await new Promise((resolve) => {
+          img.onload = resolve
+        })
+
+        const fullRect = {
+          x: 0,
+          y: 0,
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+        }
+
+        await uploadAndAnnotate(pending.file, fullRect)
+      }
+
+      setIsDialogOpen(false)
+      setPendingImages([])
+      setCurrentImageIndex(0)
+      setCurrentRect({ x: 0, y: 0, width: 0, height: 0 })
+      setImageLoaded(false)
+      resetViewport()
+      fetchImages()
+      if (onModelUpdate) onModelUpdate()
+    } catch (err) {
+      console.error('Failed to skip all', err)
+      alert('Failed to process all images')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+>>>>>>> master
   const handleEditImage = (imageId: string) => {
     setEditingImageId(imageId)
     setIsDialogOpen(true)
@@ -564,8 +844,20 @@ export default function SampleImages() {
     resetViewport()
   }
 
+<<<<<<< HEAD
   const handleDeleteImage = (id: string) => {
     setImages((prev) => prev.filter((img) => img.id !== id))
+=======
+  const handleDeleteImage = async (id: string) => {
+    try {
+      await imagesAPI.delete(parseInt(id))
+      setImages((prev) => prev.filter((img) => img.id !== id))
+      if (onModelUpdate) onModelUpdate()
+    } catch (err) {
+      console.error('Failed to delete image', err)
+      alert('Failed to delete image')
+    }
+>>>>>>> master
   }
 
   return (
@@ -581,6 +873,7 @@ export default function SampleImages() {
             Defective ({defectiveCount})
           </button>
           <button
+<<<<<<< HEAD
             onClick={() => setActiveTab('non-defective')}
             className={`rounded-r-md px-3 py-1 ${
               activeTab === 'non-defective'
@@ -589,6 +882,14 @@ export default function SampleImages() {
             }`}
           >
             Non-Defective ({nonDefectiveCount})
+=======
+            onClick={() => setActiveTab('normal')}
+            className={`rounded-r-md px-3 py-1 ${
+              activeTab === 'normal' ? 'bg-green-50 text-green-600' : 'bg-white text-gray-600'
+            }`}
+          >
+            Normal ({normalCount})
+>>>>>>> master
           </button>
         </div>
 
@@ -596,9 +897,16 @@ export default function SampleImages() {
           size={'lg'}
           className="-mt-3 w-36 bg-gray-800 text-white hover:bg-gray-700"
           onClick={handleUploadClick}
+<<<<<<< HEAD
         >
           <ImageUp className="mr-2" />
           Upload
+=======
+          disabled={loading}
+        >
+          <ImageUp className="mr-2" />
+          {loading ? 'Uploading...' : 'Upload'}
+>>>>>>> master
         </Button>
 
         <input
@@ -611,7 +919,11 @@ export default function SampleImages() {
         />
       </div>
 
+<<<<<<< HEAD
       <div className="grid grid-cols-4 gap-6 pt-4">
+=======
+      <div className="grid grid-cols-2 gap-4 pt-4 md:grid-cols-4 lg:grid-cols-5">
+>>>>>>> master
         {filteredImages.map((image) => (
           <ImageCard
             key={image.id}
@@ -622,7 +934,11 @@ export default function SampleImages() {
         ))}
       </div>
 
+<<<<<<< HEAD
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+=======
+      <Dialog open={isDialogOpen} onOpenChange={(open) => !loading && setIsDialogOpen(open)}>
+>>>>>>> master
         <DialogContent className="max-w-5xl">
           <DialogHeader>
             <DialogTitle>
@@ -681,21 +997,41 @@ export default function SampleImages() {
           <DialogFooter className="gap-2">
             {!editingImageId && (
               <div className="flex w-full justify-between">
+<<<<<<< HEAD
                 <Button variant="destructive" onClick={handleSkipAll}>
                   Skip All
                 </Button>
                 <Button variant="outline" onClick={handleSkipImage}>
                   Skip
+=======
+                <Button variant="destructive" onClick={handleSkipAll} disabled={loading}>
+                  {loading ? 'Processing...' : 'Skip All'}
+                </Button>
+                <Button variant="outline" onClick={handleSkipImage} disabled={loading}>
+                  {loading ? 'Processing...' : 'Skip'}
+>>>>>>> master
                 </Button>
               </div>
             )}
             {editingImageId && (
+<<<<<<< HEAD
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
             )}
             <Button onClick={handleSaveDefect} disabled={currentRect.width === 0 || !imageLoaded}>
               {editingImageId ? 'Update' : 'Save & Continue'}
+=======
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={loading}>
+                Cancel
+              </Button>
+            )}
+            <Button
+              onClick={handleSaveDefect}
+              disabled={(currentRect.width === 0 && !editingImageId) || !imageLoaded || loading}
+            >
+              {loading ? 'Saving...' : editingImageId ? 'Update' : 'Save & Continue'}
+>>>>>>> master
             </Button>
           </DialogFooter>
         </DialogContent>
