@@ -15,6 +15,19 @@ router = APIRouter()
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)):
     """Register a new user (optionally with company)"""
+<<<<<<< HEAD
+=======
+    # Sanitize input: Convert empty strings to None for optional fields
+    if user_in.full_name == "":
+        user_in.full_name = None
+    
+    if user_in.company_data:
+        if user_in.company_data.description == "":
+            user_in.company_data.description = None
+        if user_in.company_data.industry == "":
+            user_in.company_data.industry = None
+
+>>>>>>> mail-services
     # Check if email already exists
     if user_service.get_by_email(db, email=user_in.email):
         raise HTTPException(
