@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     MODEL_WEIGHTS_DIR: str = "model_weights"
+    OPENAI_API_KEY: str = "" 
+
     # File Upload
     MAX_UPLOAD_SIZE_MB: int = 100
     UPLOAD_DIR: str = "uploads"
