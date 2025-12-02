@@ -1,10 +1,5 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-<<<<<<< HEAD
-=======
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
->>>>>>> mail-services
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.cache import cache
@@ -44,15 +39,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-<<<<<<< HEAD
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     print(f"DEBUG MIDDLEWARE: {request.method} {request.url}", flush=True)
     response = await call_next(request)
     return response
-=======
-
->>>>>>> mail-services
 
 # Set up CORS
 app.add_middleware(
@@ -63,20 +54,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-<<<<<<< HEAD
-=======
- # Add validation error handler
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    print(f"VALIDATION ERROR on {request.url}:", flush=True)
-    print(f"Errors: {exc.errors()}", flush=True)
-    print(f"Body: {exc.body}", flush=True)
-    return JSONResponse(
-        status_code=422,
-        content={"detail": exc.errors(), "body": exc.body}
-    )
-
->>>>>>> mail-services
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
