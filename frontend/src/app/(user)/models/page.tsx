@@ -11,16 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { ImageIcon, Plus, Settings } from 'lucide-react'
-import Link from 'next/link'
-import { useMemo, useState } from 'react'
-
-type Status = 'New' | 'Awaiting' | 'Training' | 'Run'
-=======
-=======
->>>>>>> mail-services
 import {
   Dialog,
   DialogContent,
@@ -36,10 +26,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { models as modelsAPI, Model as BackendModel, auth } from '@/lib/api'
 
 type Status = 'Created' | 'Awaiting Validation' | 'Training' | 'Ready' | 'Failed'
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
 
 interface Model {
   id: number
@@ -51,69 +37,6 @@ interface Model {
   status: Status
   statusPercent?: number
   images: string[]
-<<<<<<< HEAD
-<<<<<<< HEAD
-}
-
-const initialModels: Model[] = [
-  {
-    id: 1,
-    name: 'QCL-1',
-    created: '1 January 2025',
-    status: 'New',
-    images: [],
-  },
-  {
-    id: 2,
-    name: 'QCL-2',
-    created: '1 January 2025',
-    training: '51 Original + 101 Generated',
-    status: 'Awaiting',
-    statusPercent: 53,
-    images: [
-      '/placeholder-image.png',
-      '/placeholder-image.png',
-      '/placeholder-image.png',
-      '/placeholder-image.png',
-    ],
-  },
-  {
-    id: 3,
-    name: 'QCL-3',
-    created: '1 January 2025',
-    training: '51 Original + 101 Generated',
-    trainingTime: '40 min + 10 min (remain)',
-    status: 'Training',
-    statusPercent: 95,
-    images: [
-      '/placeholder-image.png',
-      '/placeholder-image.png',
-      '/placeholder-image.png',
-      '/placeholder-image.png',
-    ],
-  },
-  {
-    id: 4,
-    name: 'QCL-4',
-    created: '1 January 2025',
-    training: '51 Original + 101 Generated',
-    trainingTime: '51 min',
-    accuracy: '98.5%',
-    status: 'Run',
-    images: [
-      '/placeholder-image.png',
-      '/placeholder-image.png',
-      '/placeholder-image.png',
-      '/placeholder-image.png',
-    ],
-  },
-]
-
-export default function ModelsPage() {
-  const [models] = useState(initialModels)
-=======
-=======
->>>>>>> mail-services
   thumbnailUrl?: string
   isPublic: boolean
   ownerId: number
@@ -156,20 +79,11 @@ export default function ModelsPage() {
   const [newModelIsPublic, setNewModelIsPublic] = useState(false)
 
   const router = useRouter()
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
 
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<string | null>(null)
   const [filterStatus, setFilterStatus] = useState<string>('All')
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> mail-services
   // Fetch current user
   useEffect(() => {
     async function fetchUser() {
@@ -266,10 +180,6 @@ export default function ModelsPage() {
     }
   }
 
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
   const filteredAndSortedModels = useMemo(() => {
     let result = [...models]
 
@@ -291,22 +201,6 @@ export default function ModelsPage() {
       <div className="flex justify-between">
         <div>
           <p className="text-3xl font-bold">Inspection Models</p>
-<<<<<<< HEAD
-<<<<<<< HEAD
-          <p className="text-slate-600">Company Pvt. Ltd.</p>
-        </div>
-
-        <Link href={'/models/QCL-1'} className="flex items-end">
-          <Button className="w-48">
-            <Plus />
-            Create New Model
-          </Button>
-        </Link>
-      </div>
-
-=======
-=======
->>>>>>> mail-services
           <p className="text-slate-600">{currentUser?.company?.name}</p>
         </div>
 
@@ -318,10 +212,6 @@ export default function ModelsPage() {
 
       {error && <div className="mt-4 rounded-md bg-red-50 p-4 text-sm text-red-800">{error}</div>}
 
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
       <div className="mt-10 mb-10 flex flex-wrap items-center gap-4">
         {' '}
         <div className="grid gap-3">
@@ -354,39 +244,16 @@ export default function ModelsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All</SelectItem>
-<<<<<<< HEAD
-<<<<<<< HEAD
-              <SelectItem value="New">New</SelectItem>
-              <SelectItem value="Awaiting">Awaiting</SelectItem>
-              <SelectItem value="Training">Training</SelectItem>
-=======
-=======
->>>>>>> mail-services
               <SelectItem value="Created">Created</SelectItem>
               <SelectItem value="Awaiting Validation">Awaiting Validation</SelectItem>
               <SelectItem value="Training">Training</SelectItem>
               <SelectItem value="Ready">Ready</SelectItem>
               <SelectItem value="Failed">Failed</SelectItem>
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
             </SelectContent>
           </Select>
         </div>
       </div>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-        {filteredAndSortedModels.map((model) => (
-          <Card key={model.id} className="relative pt-0 pb-20">
-            <div className="overflow-hidden rounded-t-md">
-              {model.images.length === 0 ? (
-                <div className="flex h-60 flex-col items-center justify-center rounded-md text-gray-400">
-=======
-=======
->>>>>>> mail-services
       {loading && (
         <div className="mt-10 flex items-center justify-center">
           <p className="text-lg text-gray-600">Loading models...</p>
@@ -399,31 +266,10 @@ export default function ModelsPage() {
             <div className="relative overflow-hidden rounded-t-md">
               {!model.thumbnailUrl ? (
                 <div className="flex h-60 flex-col items-center justify-center rounded-md bg-gray-50 text-gray-400">
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
                   <ImageIcon size={48} />
                   <p className="mt-3 text-sm">No images added</p>
                 </div>
               ) : (
-<<<<<<< HEAD
-<<<<<<< HEAD
-                <div className="grid h-60 grid-cols-2 grid-rows-2">
-                  {model.images.map((src, i) => (
-                    <div key={i} className="flex items-center justify-center">
-                      <img src={src} alt="" className="h-full w-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <CardContent>
-              <div className="flex items-start justify-between">
-                <h3 className="text-xl font-semibold">{model.name}</h3>
-=======
-=======
->>>>>>> mail-services
                 <div className="h-60 w-full">
                   <img
                     src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}${model.thumbnailUrl}?token=${typeof window !== 'undefined' ? localStorage.getItem('qc_leap_token') : ''}`}
@@ -470,10 +316,6 @@ export default function ModelsPage() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
               </div>
               <div className="pt-2 text-gray-700">
                 <p>
@@ -492,17 +334,8 @@ export default function ModelsPage() {
                 )}
                 {model.accuracy && (
                   <p>
-<<<<<<< HEAD
-<<<<<<< HEAD
-                    <span className="font-semibold">Accuracy:</span> {model.accuracy}
-=======
                     <span className="font-semibold">Accuracy:</span>{' '}
                     {Number(model.accuracy).toFixed(1)}%
->>>>>>> master
-=======
-                    <span className="font-semibold">Accuracy:</span>{' '}
-                    {Number(model.accuracy).toFixed(1)}%
->>>>>>> mail-services
                   </p>
                 )}
               </div>
@@ -516,39 +349,14 @@ export default function ModelsPage() {
                   </Button>
                 </Link>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-                {model.status === 'Run' ? (
-                  <button className="flex h-full items-center justify-center rounded-md bg-green-600 py-2 text-sm text-white hover:bg-green-700">
-                    Run
-                  </button>
-=======
-=======
->>>>>>> mail-services
                 {model.status === 'Ready' ? (
                   <span className="flex h-full items-center justify-center rounded-md bg-green-600 py-2 text-sm text-white hover:bg-green-700">
                     Ready
                   </span>
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
                 ) : model.status === 'Training' ? (
                   <span className="flex h-full w-full items-center justify-center rounded-md bg-blue-600 py-2 text-sm text-white">
                     Training {model.statusPercent ? `(${model.statusPercent}%)` : ''}
                   </span>
-<<<<<<< HEAD
-<<<<<<< HEAD
-                ) : model.status === 'Awaiting' ? (
-                  <span className="flex h-full w-full items-center justify-center rounded-md bg-orange-500 py-2 text-sm text-white">
-                    Awaiting {model.statusPercent ? `(${model.statusPercent}%)` : ''}
-                  </span>
-                ) : (
-                  <span className="flex h-full items-center justify-center rounded-md bg-gray-700 py-2 text-sm text-white">
-                    New
-=======
-=======
->>>>>>> mail-services
                 ) : model.status === 'Awaiting Validation' ? (
                   <span className="flex h-full w-full items-center justify-center rounded-md bg-orange-500 py-2 text-sm text-white">
                     Awaiting Validation
@@ -560,10 +368,6 @@ export default function ModelsPage() {
                 ) : (
                   <span className="flex h-full items-center justify-center rounded-md bg-gray-700 py-2 text-sm text-white">
                     Created
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
                   </span>
                 )}
               </div>
@@ -571,11 +375,6 @@ export default function ModelsPage() {
           </Card>
         ))}
       </div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> mail-services
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -662,10 +461,6 @@ export default function ModelsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
     </div>
   )
 }

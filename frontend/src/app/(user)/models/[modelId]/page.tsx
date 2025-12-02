@@ -1,36 +1,11 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { Button } from '@/components/ui/button'
-import { History, Plus } from 'lucide-react'
-=======
-=======
->>>>>>> mail-services
 'use client'
 
 import { Button } from '@/components/ui/button'
 import { History } from 'lucide-react'
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
 import Link from 'next/link'
 import SampleImages from './_components/SampleImages'
 import Training from './_components/Training'
 import GeneratedImages from './_components/GeneratedImages'
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-type StepType = 'sample_images' | 'generated_images' | 'training'
-
-export default async function ModelDetailPage({
-  searchParams,
-}: {
-  searchParams: { step?: StepType }
-}) {
-  const { step = 'sample_images' } = await searchParams
-=======
-=======
->>>>>>> mail-services
 import RunDialog from './_components/RunDialog'
 import { models as modelsAPI } from '@/lib/api'
 import { useParams, useSearchParams } from 'next/navigation'
@@ -74,10 +49,6 @@ export default function ModelDetailPage() {
 
   const hasImages = stats && stats.defective_images > 0 && stats.normal_images > 0
   const hasGenerated = stats && stats.synthetic_images > 0
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
 
   const StepComponent = {
     sample_images: SampleImages,
@@ -85,11 +56,6 @@ export default function ModelDetailPage() {
     training: Training,
   }[step]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> mail-services
   // Logic to determine if Run button should be shown
   // Show if status is ready OR if it was previously trained (we can infer this if status is not ready but we want to allow running on old version?
   // Actually, user said: "If it is already trained, never change run button".
@@ -113,41 +79,15 @@ export default function ModelDetailPage() {
   const canRun =
     model && (model.status === 'ready' || (model.accuracy !== null && model.accuracy !== undefined))
 
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
   return (
     <div className="py-8">
       <div className="mt-0.5 flex justify-between">
         <div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-          <p className="text-3xl font-bold">QCL-1</p>
-=======
           <p className="text-3xl font-bold">QCL-{modelId}</p>
->>>>>>> master
-=======
-          <p className="text-3xl font-bold">QCL-{modelId}</p>
->>>>>>> mail-services
           <p className="text-slate-600">Inspection Model</p>
         </div>
 
         <div className="flex items-end gap-5">
-<<<<<<< HEAD
-<<<<<<< HEAD
-          <Link href={'./QCL-1/runs'}>
-            <Button className="w-40 bg-slate-200 text-black" variant={'outline'}>
-              <History />
-              History
-            </Button>
-          </Link>
-          <span className="flex h-9 w-40 items-center justify-center rounded-md bg-gray-700 text-sm text-white">
-            New
-          </span>
-=======
-=======
->>>>>>> mail-services
           {canRun && (
             <Link href={`./${modelId}/runs`}>
               <Button className="w-40 bg-slate-200 text-black" variant={'outline'}>
@@ -166,10 +106,6 @@ export default function ModelDetailPage() {
               </span>
             )
           )}
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
         </div>
       </div>
 
@@ -185,33 +121,6 @@ export default function ModelDetailPage() {
               1. Sample Images
             </Button>
           </Link>
-<<<<<<< HEAD
-<<<<<<< HEAD
-          <Link href="?step=generated_images">
-            <Button
-              variant={step === 'generated_images' ? 'default' : 'outline'}
-              className="w-48"
-              size={'lg'}
-            >
-              2. Generated Images
-            </Button>
-          </Link>
-          <Link href="?step=training">
-            <Button
-              variant={step === 'training' ? 'default' : 'outline'}
-              className="w-48"
-              size={'lg'}
-            >
-              3. Training
-            </Button>
-          </Link>
-        </div>
-      </div>
-      <div className="mt-8 h-full w-full">
-        <StepComponent />
-=======
-=======
->>>>>>> mail-services
 
           <div className={!hasImages ? 'pointer-events-none opacity-50' : ''}>
             <Link href="?step=generated_images" aria-disabled={!hasImages}>
@@ -242,10 +151,6 @@ export default function ModelDetailPage() {
       </div>
       <div className="mt-8 h-full w-full">
         <StepComponent modelId={id} model={model} onModelUpdate={refreshModel} />
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
       </div>
     </div>
   )

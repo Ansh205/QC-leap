@@ -11,34 +11,15 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Trash2, Image as ImageIcon, ImageUp, Edit, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 import { images as imagesAPI, annotations as annotationsAPI } from '@/lib/api'
->>>>>>> master
-=======
-import { images as imagesAPI, annotations as annotationsAPI } from '@/lib/api'
->>>>>>> mail-services
 
 type ImageType = {
   id: string
   url: string
-<<<<<<< HEAD
-<<<<<<< HEAD
-  type: 'defective' | 'non-defective'
-  defectBox?: { x: number; y: number; width: number; height: number }
-  file?: File
-=======
-=======
->>>>>>> mail-services
   type: 'defective' | 'normal'
   defectBox?: { x: number; y: number; width: number; height: number }
   file?: File
   is_synthetic?: boolean
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
 }
 
 type PendingImage = {
@@ -147,18 +128,8 @@ function ImageCard({
   }, [image])
 
   return (
-<<<<<<< HEAD
-<<<<<<< HEAD
-    <Card className="relative h-64">
-      <div className="absolute top-2 right-2 z-10 flex gap-2">
-=======
     <Card className="group relative h-64">
       <div className="absolute top-2 right-2 z-10 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
->>>>>>> master
-=======
-    <Card className="group relative h-64">
-      <div className="absolute top-2 right-2 z-10 flex gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
->>>>>>> mail-services
         {image.type === 'defective' && onEdit && (
           <button
             onClick={onEdit}
@@ -184,13 +155,6 @@ function ImageCard({
   )
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-export default function SampleImages() {
-  const [activeTab, setActiveTab] = useState<'defective' | 'non-defective'>('defective')
-=======
-=======
->>>>>>> mail-services
 export default function SampleImages({
   modelId,
   onModelUpdate,
@@ -199,24 +163,13 @@ export default function SampleImages({
   onModelUpdate?: () => void
 }) {
   const [activeTab, setActiveTab] = useState<'defective' | 'normal'>('defective')
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
   const [images, setImages] = useState<ImageType[]>([])
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([])
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingImageId, setEditingImageId] = useState<string | null>(null)
   const [imageLoaded, setImageLoaded] = useState(false)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
   const [loading, setLoading] = useState(false)
->>>>>>> master
-=======
-  const [loading, setLoading] = useState(false)
->>>>>>> mail-services
 
   // Zoom and Pan state
   const [viewportTransform, setViewportTransform] = useState({ x: 0, y: 0, scale: 1 })
@@ -231,14 +184,6 @@ export default function SampleImages({
   const [currentRect, setCurrentRect] = useState({ x: 0, y: 0, width: 0, height: 0 })
 
   const defectiveCount = images.filter((img) => img.type === 'defective').length
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const nonDefectiveCount = images.filter((img) => img.type === 'non-defective').length
-  const filteredImages = images.filter((img) => img.type === activeTab)
-
-=======
-=======
->>>>>>> mail-services
   const normalCount = images.filter((img) => img.type === 'normal').length
   const filteredImages = images.filter((img) => img.type === activeTab)
 
@@ -306,29 +251,13 @@ export default function SampleImages({
     }
   }
 
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
   const handleUploadClick = () => {
     fileInputRef.current?.click()
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-=======
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
->>>>>>> master
-=======
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length === 0) return
->>>>>>> mail-services
-
     if (activeTab === 'defective') {
       const pending = files.map((file) => ({
         file,
@@ -341,18 +270,6 @@ export default function SampleImages({
       setImageLoaded(false)
       resetViewport()
     } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      const newImages: ImageType[] = files.map((file) => ({
-        id: crypto.randomUUID(),
-        url: URL.createObjectURL(file),
-        type: 'non-defective',
-        file,
-      }))
-      setImages((prev) => [...prev, ...newImages])
-=======
-=======
->>>>>>> mail-services
       // Normal images - upload immediately
       try {
         setLoading(true)
@@ -365,10 +282,6 @@ export default function SampleImages({
       } finally {
         setLoading(false)
       }
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
     }
 
     e.target.value = ''
@@ -439,17 +352,8 @@ export default function SampleImages({
 
     const canvas = canvasRef.current
     const img = new Image()
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
     // Add crossOrigin to allow canvas manipulation of remote images
     img.crossOrigin = 'anonymous'
->>>>>>> master
-=======
-    // Add crossOrigin to allow canvas manipulation of remote images
-    img.crossOrigin = 'anonymous'
->>>>>>> mail-services
-
     img.onload = () => {
       imageRef.current = img
 
@@ -630,51 +534,6 @@ export default function SampleImages({
     resetViewport()
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const handleSaveDefect = () => {
-    if (!canvasRef.current || !imageRef.current) return
-
-    // Rectangle coordinates are already in natural image space
-    const normalizedRect = {
-      x: Math.round(currentRect.x),
-      y: Math.round(currentRect.y),
-      width: Math.round(currentRect.width),
-      height: Math.round(currentRect.height),
-    }
-
-    if (editingImageId) {
-      setImages((prev) =>
-        prev.map((img) =>
-          img.id === editingImageId
-            ? {
-                ...img,
-                defectBox: normalizedRect,
-              }
-            : img
-        )
-      )
-
-      setIsDialogOpen(false)
-      setEditingImageId(null)
-      setCurrentRect({ x: 0, y: 0, width: 0, height: 0 })
-      setImageLoaded(false)
-      resetViewport()
-    } else {
-      const currentPending = pendingImages[currentImageIndex]
-
-      const newImage: ImageType = {
-        id: crypto.randomUUID(),
-        url: currentPending.url,
-        type: 'defective',
-        defectBox: normalizedRect,
-        file: currentPending.file,
-      }
-
-      setImages((prev) => [...prev, newImage])
-=======
-=======
->>>>>>> mail-services
   const uploadAndAnnotate = async (
     file: File,
     rect: { x: number; y: number; width: number; height: number }
@@ -764,10 +623,6 @@ export default function SampleImages({
       }
 
       await uploadAndAnnotate(currentPending.file, fullRect)
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
 
       if (currentImageIndex < pendingImages.length - 1) {
         setCurrentImageIndex((prev) => prev + 1)
@@ -780,59 +635,6 @@ export default function SampleImages({
         setCurrentImageIndex(0)
         setImageLoaded(false)
         resetViewport()
-<<<<<<< HEAD
-<<<<<<< HEAD
-      }
-    }
-  }
-
-  const handleSkipImage = () => {
-    const currentPending = pendingImages[currentImageIndex]
-
-    const newImage: ImageType = {
-      id: crypto.randomUUID(),
-      url: currentPending.url,
-      type: 'defective',
-      file: currentPending.file,
-    }
-
-    setImages((prev) => [...prev, newImage])
-
-    if (currentImageIndex < pendingImages.length - 1) {
-      setCurrentImageIndex((prev) => prev + 1)
-      setCurrentRect({ x: 0, y: 0, width: 0, height: 0 })
-      setImageLoaded(false)
-      resetViewport()
-    } else {
-      setIsDialogOpen(false)
-      setPendingImages([])
-      setCurrentImageIndex(0)
-      setImageLoaded(false)
-      resetViewport()
-    }
-  }
-
-  const handleSkipAll = () => {
-    const remainingImages = pendingImages.slice(currentImageIndex).map((pending) => ({
-      id: crypto.randomUUID(),
-      url: pending.url,
-      type: 'defective' as const,
-      file: pending.file,
-    }))
-
-    setImages((prev) => [...prev, ...remainingImages])
-
-    setIsDialogOpen(false)
-    setPendingImages([])
-    setCurrentImageIndex(0)
-    setCurrentRect({ x: 0, y: 0, width: 0, height: 0 })
-    setImageLoaded(false)
-    resetViewport()
-  }
-
-=======
-=======
->>>>>>> mail-services
         fetchImages()
         if (onModelUpdate) onModelUpdate()
       }
@@ -891,10 +693,6 @@ export default function SampleImages({
     }
   }
 
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
   const handleEditImage = (imageId: string) => {
     setEditingImageId(imageId)
     setIsDialogOpen(true)
@@ -904,13 +702,6 @@ export default function SampleImages({
     resetViewport()
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const handleDeleteImage = (id: string) => {
-    setImages((prev) => prev.filter((img) => img.id !== id))
-=======
-=======
->>>>>>> mail-services
   const handleDeleteImage = async (id: string) => {
     try {
       await imagesAPI.delete(parseInt(id))
@@ -920,10 +711,6 @@ export default function SampleImages({
       console.error('Failed to delete image', err)
       alert('Failed to delete image')
     }
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
   }
 
   return (
@@ -939,29 +726,12 @@ export default function SampleImages({
             Defective ({defectiveCount})
           </button>
           <button
-<<<<<<< HEAD
-<<<<<<< HEAD
-            onClick={() => setActiveTab('non-defective')}
-            className={`rounded-r-md px-3 py-1 ${
-              activeTab === 'non-defective'
-                ? 'bg-green-50 text-green-600'
-                : 'bg-white text-gray-600'
-            }`}
-          >
-            Non-Defective ({nonDefectiveCount})
-=======
-=======
->>>>>>> mail-services
             onClick={() => setActiveTab('normal')}
             className={`rounded-r-md px-3 py-1 ${
               activeTab === 'normal' ? 'bg-green-50 text-green-600' : 'bg-white text-gray-600'
             }`}
           >
             Normal ({normalCount})
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
           </button>
         </div>
 
@@ -969,22 +739,10 @@ export default function SampleImages({
           size={'lg'}
           className="-mt-3 w-36 bg-gray-800 text-white hover:bg-gray-700"
           onClick={handleUploadClick}
-<<<<<<< HEAD
-<<<<<<< HEAD
-        >
-          <ImageUp className="mr-2" />
-          Upload
-=======
-=======
->>>>>>> mail-services
           disabled={loading}
         >
           <ImageUp className="mr-2" />
           {loading ? 'Uploading...' : 'Upload'}
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
         </Button>
 
         <input
@@ -997,15 +755,7 @@ export default function SampleImages({
         />
       </div>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <div className="grid grid-cols-4 gap-6 pt-4">
-=======
       <div className="grid grid-cols-2 gap-4 pt-4 md:grid-cols-4 lg:grid-cols-5">
->>>>>>> master
-=======
-      <div className="grid grid-cols-2 gap-4 pt-4 md:grid-cols-4 lg:grid-cols-5">
->>>>>>> mail-services
         {filteredImages.map((image) => (
           <ImageCard
             key={image.id}
@@ -1016,15 +766,7 @@ export default function SampleImages({
         ))}
       </div>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-=======
       <Dialog open={isDialogOpen} onOpenChange={(open) => !loading && setIsDialogOpen(open)}>
->>>>>>> master
-=======
-      <Dialog open={isDialogOpen} onOpenChange={(open) => !loading && setIsDialogOpen(open)}>
->>>>>>> mail-services
         <DialogContent className="max-w-5xl">
           <DialogHeader>
             <DialogTitle>
@@ -1083,40 +825,15 @@ export default function SampleImages({
           <DialogFooter className="gap-2">
             {!editingImageId && (
               <div className="flex w-full justify-between">
-<<<<<<< HEAD
-<<<<<<< HEAD
-                <Button variant="destructive" onClick={handleSkipAll}>
-                  Skip All
-                </Button>
-                <Button variant="outline" onClick={handleSkipImage}>
-                  Skip
-=======
-=======
->>>>>>> mail-services
                 <Button variant="destructive" onClick={handleSkipAll} disabled={loading}>
                   {loading ? 'Processing...' : 'Skip All'}
                 </Button>
                 <Button variant="outline" onClick={handleSkipImage} disabled={loading}>
                   {loading ? 'Processing...' : 'Skip'}
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
                 </Button>
               </div>
             )}
             {editingImageId && (
-<<<<<<< HEAD
-<<<<<<< HEAD
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-            )}
-            <Button onClick={handleSaveDefect} disabled={currentRect.width === 0 || !imageLoaded}>
-              {editingImageId ? 'Update' : 'Save & Continue'}
-=======
-=======
->>>>>>> mail-services
               <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={loading}>
                 Cancel
               </Button>
@@ -1126,10 +843,6 @@ export default function SampleImages({
               disabled={(currentRect.width === 0 && !editingImageId) || !imageLoaded || loading}
             >
               {loading ? 'Saving...' : editingImageId ? 'Update' : 'Save & Continue'}
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
             </Button>
           </DialogFooter>
         </DialogContent>

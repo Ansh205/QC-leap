@@ -1,14 +1,6 @@
 'use client'
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { useState } from 'react'
-=======
 import { useState, useEffect } from 'react'
->>>>>>> master
-=======
-import { useState, useEffect } from 'react'
->>>>>>> mail-services
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -23,20 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-<<<<<<< HEAD
-<<<<<<< HEAD
-import { Building2, Lock, Save, Shield } from 'lucide-react'
-import { toast } from 'sonner'
-
-// Combined schema for all account changes - requires current password
-const accountSchema = z
-  .object({
-    companyName: z.string().min(2, {
-      message: 'Company name must be at least 2 characters.',
-    }),
-=======
-=======
->>>>>>> mail-services
 import { Building2, Lock, Save, Shield, User, Mail, UserCircle, Award } from 'lucide-react'
 import { toast } from 'sonner'
 import { auth } from '@/lib/api'
@@ -44,10 +22,6 @@ import { auth } from '@/lib/api'
 // Schema for password changes - requires current password
 const accountSchema = z
   .object({
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
     currentPassword: z.string().min(1, {
       message: 'Current password is required to make changes.',
     }),
@@ -98,17 +72,6 @@ type AccountFormValues = z.infer<typeof accountSchema>
 
 export default function AccountPage() {
   const [isUpdating, setIsUpdating] = useState(false)
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-  // Single form for all account changes
-  const form = useForm<AccountFormValues>({
-    resolver: zodResolver(accountSchema),
-    defaultValues: {
-      companyName: 'Company Pvt. Ltd.',
-=======
-=======
->>>>>>> mail-services
   const [userData, setUserData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -131,10 +94,6 @@ export default function AccountPage() {
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
     defaultValues: {
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
@@ -145,29 +104,6 @@ export default function AccountPage() {
     setIsUpdating(true)
 
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      // Determine what's being changed
-      const isChangingPassword = data.newPassword && data.newPassword.length > 0
-      const isChangingCompany = data.companyName !== 'Company Pvt. Ltd.' // Compare with original value
-
-      // API call to verify current password first
-      // Then update company name and/or password
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      console.log('Account update data:', data)
-
-      if (isChangingPassword && isChangingCompany) {
-        toast.success('Company name and password updated successfully.')
-      } else if (isChangingPassword) {
-        toast.success('Password changed successfully.')
-      } else if (isChangingCompany) {
-        toast.success('Company name updated successfully.')
-      }
-
-      // Reset only the password fields after successful submission
-=======
-=======
->>>>>>> mail-services
       const isChangingPassword = data.newPassword && data.newPassword.length > 0
 
       if (!isChangingPassword) {
@@ -183,33 +119,16 @@ export default function AccountPage() {
       toast.success('Password changed successfully.')
 
       // Reset password fields after successful submission
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
       form.setValue('currentPassword', '')
       form.setValue('newPassword', '')
       form.setValue('confirmPassword', '')
     } catch (error) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      toast.error('Failed to update account. Please check your current password.')
-=======
       toast.error('Failed to update password. Please check your current password.')
->>>>>>> master
-=======
-      toast.error('Failed to update password. Please check your current password.')
->>>>>>> mail-services
     } finally {
       setIsUpdating(false)
     }
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> mail-services
   if (loading) {
     return (
       <div className="container mx-auto py-8">
@@ -218,10 +137,6 @@ export default function AccountPage() {
     )
   }
 
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
   return (
     <div className="container mx-auto py-8">
       <div className="mb-6">
@@ -231,33 +146,6 @@ export default function AccountPage() {
 
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="mx-auto max-w-3xl space-y-6 pt-3">
-<<<<<<< HEAD
-<<<<<<< HEAD
-          {/* Company Information Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                <CardTitle>Company Information</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="companyName">Company Name</Label>
-                <Input
-                  id="companyName"
-                  placeholder="Enter company name"
-                  {...form.register('companyName')}
-                  aria-invalid={!!form.formState.errors.companyName}
-                />
-                {form.formState.errors.companyName && (
-                  <p className="text-sm text-red-500">
-                    {form.formState.errors.companyName.message}
-                  </p>
-                )}
-=======
-=======
->>>>>>> mail-services
           {/* User Information Card (Read-only) */}
           <Card>
             <CardHeader>
@@ -294,21 +182,10 @@ export default function AccountPage() {
                   </Label>
                   <p className="text-sm font-medium">{userData?.company?.name || 'None'}</p>
                 </div>
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
               </div>
             </CardContent>
           </Card>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-          {/* Password Change Card */}
-          <Card>
-=======
-=======
->>>>>>> mail-services
           {/* Company Information Card - Only show for users with company */}
           {userData?.company_id && userData?.role?.toUpperCase() !== 'COMPANY_ADMIN' && (
             <Card>
@@ -327,27 +204,32 @@ export default function AccountPage() {
                   </div>
                   <div className="space-y-2">
                     <Label>Industry</Label>
-                    <p className="text-sm font-medium">{userData?.company?.industry || 'Not specified'}</p>
+                    <p className="text-sm font-medium">
+                      {userData?.company?.industry || 'Not specified'}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Description</Label>
-                  <p className="text-sm font-medium">{userData?.company?.description || 'Not specified'}</p>
+                  <p className="text-sm font-medium">
+                    {userData?.company?.description || 'Not specified'}
+                  </p>
                 </div>
-                <div className="space-y-2 pt-2 border-t">
+                <div className="space-y-2 border-t pt-2">
                   <Label className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
                     Your Role & Permission
                   </Label>
                   <p className="text-sm font-medium">
-                    {userData?.role?.toUpperCase() === 'COMPANY_ADMIN' ? 'Company Admin' : 'Member'} •{' '}
+                    {userData?.role?.toUpperCase() === 'COMPANY_ADMIN' ? 'Company Admin' : 'Member'}{' '}
+                    •{' '}
                     {userData?.permission?.toUpperCase() === 'INSPECT_AND_TRAIN'
                       ? 'Inspect & Train'
                       : userData?.permission?.toUpperCase() === 'INSPECT_ONLY'
-                      ? 'Inspect Only'
-                      : 'Unknown Permission'}
+                        ? 'Inspect Only'
+                        : 'Unknown Permission'}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Contact a company admin to modify company information
                   </p>
                 </div>
@@ -357,23 +239,12 @@ export default function AccountPage() {
 
           {/* Password Change Card */}
           <Card className="border-yellow-200 bg-yellow-50/50">
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Lock className="h-5 w-5" />
                 <CardTitle>Change Password</CardTitle>
               </div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
               <CardDescription>Update your password with verification</CardDescription>
->>>>>>> master
-=======
-              <CardDescription>Update your password with verification</CardDescription>
->>>>>>> mail-services
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -410,45 +281,11 @@ export default function AccountPage() {
                   </p>
                 )}
               </div>
-<<<<<<< HEAD
-<<<<<<< HEAD
-            </CardContent>
-          </Card>
 
-          {/* Authentication Card - Current Password Required */}
-          <Card className="border-yellow-200 bg-yellow-50/50">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-yellow-600" />
-                <CardTitle className="text-yellow-900">Verify Your Identity</CardTitle>
-              </div>
-              <CardDescription className="text-yellow-800">
-                Enter your current password to save any changes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password *</Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  placeholder="Enter current password"
-                  {...form.register('currentPassword')}
-                  aria-invalid={!!form.formState.errors.currentPassword}
-                />
-                {form.formState.errors.currentPassword && (
-                  <p className="text-sm text-red-500">
-                    {form.formState.errors.currentPassword.message}
-                  </p>
-                )}
-=======
-=======
->>>>>>> mail-services
-
-              <div className="border-t border-yellow-300 pt-4 mt-4">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="mt-4 border-t border-yellow-300 pt-4">
+                <div className="mb-3 flex items-center gap-2">
                   <Shield className="h-5 w-5 text-yellow-600" />
-                  <Label className="text-yellow-900 font-semibold">Verify Your Identity</Label>
+                  <Label className="font-semibold text-yellow-900">Verify Your Identity</Label>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="currentPassword">Current Password *</Label>
@@ -468,24 +305,12 @@ export default function AccountPage() {
                     Your current password is required to change your password
                   </p>
                 </div>
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> mail-services
               </div>
             </CardContent>
             <CardFooter>
               <Button type="submit" disabled={isUpdating} className="w-full">
                 <Save className="mr-2 h-4 w-4" />
-<<<<<<< HEAD
-<<<<<<< HEAD
-                {isUpdating ? 'Saving Changes...' : 'Save Changes'}
-=======
                 {isUpdating ? 'Saving Changes...' : 'Change Password'}
->>>>>>> master
-=======
-                {isUpdating ? 'Saving Changes...' : 'Change Password'}
->>>>>>> mail-services
               </Button>
             </CardFooter>
           </Card>
