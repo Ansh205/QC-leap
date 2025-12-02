@@ -14,10 +14,7 @@ from app.models.image import Image, ImageType
 from app.models.model_run import ModelRun
 from app.models.inference_result import InferenceResult
 from app.services.notification_service import notification_service
-<<<<<<< HEAD
-=======
 from app.models.notification import NotificationType
->>>>>>> mail-services
 from pathlib import Path
 import os
 import traceback
@@ -147,8 +144,6 @@ def train_model_task(self, training_job_id: int):
         model.vit_model_path = checkpoint_path
         
         db.commit()
-<<<<<<< HEAD
-=======
         db.commit()
 
         # Send notification
@@ -165,7 +160,6 @@ def train_model_task(self, training_job_id: int):
         except Exception as e:
             print(f"Failed to send success notification: {e}")
 
->>>>>>> mail-services
         print("Training Pipeline Completed Successfully!")
         return {"status": "success", "accuracy": model.accuracy}
 
@@ -179,8 +173,6 @@ def train_model_task(self, training_job_id: int):
         if 'model' in locals() and model:
             model.status = ModelStatus.FAILED
         db.commit()
-<<<<<<< HEAD
-=======
 
         # Send failure notification
         try:
@@ -196,7 +188,6 @@ def train_model_task(self, training_job_id: int):
                 )
         except Exception as notify_e:
             print(f"Failed to send failure notification: {notify_e}")
->>>>>>> mail-services
         return {"status": "failed", "error": str(e)}
 
 @celery_app.task(bind=True, base=DatabaseTask, name='app.ml.tasks.generate_synthetic')
@@ -331,8 +322,6 @@ def generate_synthetic_task(self, training_job_id: int):
         model.status = ModelStatus.AWAITING_VALIDATION
         
         db.commit()
-<<<<<<< HEAD
-=======
         db.commit()
 
         # Send notification
@@ -349,7 +338,6 @@ def generate_synthetic_task(self, training_job_id: int):
         except Exception as e:
             print(f"Failed to send success notification: {e}")
 
->>>>>>> mail-services
         print("Synthetic Generation Completed Successfully!")
         return {"status": "success", "count": len(gen_paths)}
 
@@ -363,8 +351,6 @@ def generate_synthetic_task(self, training_job_id: int):
         if 'model' in locals() and model:
             model.status = ModelStatus.FAILED
         db.commit()
-<<<<<<< HEAD
-=======
 
         # Send failure notification
         try:
@@ -380,7 +366,6 @@ def generate_synthetic_task(self, training_job_id: int):
                 )
         except Exception as notify_e:
             print(f"Failed to send failure notification: {notify_e}")
->>>>>>> mail-services
         return {"status": "failed", "error": str(e)}
 
 @celery_app.task(bind=True, base=DatabaseTask, name='app.ml.tasks.execute_run')
@@ -420,8 +405,6 @@ def execute_run_task(self, run_id: int):
         run.status = RunStatus.COMPLETED
         run.completed_at = datetime.utcnow()
         db.commit()
-<<<<<<< HEAD
-=======
 
         # Send notification
         try:
@@ -438,16 +421,12 @@ def execute_run_task(self, run_id: int):
             )
         except Exception as e:
             print(f"Failed to send success notification: {e}")
->>>>>>> mail-services
         
     except Exception as e:
         print(f"Run failed: {e}")
         traceback.print_exc()
         if 'run' in locals() and run:
             run.status = RunStatus.FAILED
-<<<<<<< HEAD
-            db.commit()
-=======
             db.commit()
 
         # Send failure notification
@@ -465,4 +444,3 @@ def execute_run_task(self, run_id: int):
                 )
         except Exception as notify_e:
             print(f"Failed to send failure notification: {notify_e}")
->>>>>>> mail-services

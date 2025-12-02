@@ -5,12 +5,9 @@ from app.models.notification import Notification, NotificationType
 from app.schemas.notification import NotificationCreate
 
 
-<<<<<<< HEAD
-=======
 from app.services.mail_service import send_message
 from app.services.user_service import user_service
 
->>>>>>> mail-services
 class NotificationService:
     def create_notification(
         self,
@@ -35,8 +32,6 @@ class NotificationService:
         db.add(notification)
         db.commit()
         db.refresh(notification)
-<<<<<<< HEAD
-=======
 
         # Send email notification
         try:
@@ -50,7 +45,6 @@ class NotificationService:
         except Exception as e:
             print(f"Failed to send email notification: {e}")
 
->>>>>>> mail-services
         return notification
 
     def get_user_notifications(
