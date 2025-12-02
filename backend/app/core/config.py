@@ -35,6 +35,12 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: Optional[str] = None
 
+    # Email
+    MAIL_USERNAME: Optional[str] = None
+    MAIL_PASSWORD: Optional[str] = None
+    MAIL_SERVER: Optional[str] = None
+    MAIL_PORT: Optional[int] = 587
+
     class Config:
         env_file = ".env"
         case_sensitive = True
