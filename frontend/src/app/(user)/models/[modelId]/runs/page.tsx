@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
@@ -32,6 +33,8 @@ const runs = [
 
 export default function ModelRunsPage() {
 =======
+=======
+>>>>>>> mail-services
 'use client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -96,11 +99,15 @@ export default function ModelRunsPage() {
     )
   }
 
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
   return (
     <div className="py-8">
       <div className="mt-0.5 flex justify-between">
         <div>
+<<<<<<< HEAD
 <<<<<<< HEAD
           <p className="text-3xl font-bold">QCL-1</p>
           <p className="text-slate-600">Inspection Model / Runs</p>
@@ -108,12 +115,17 @@ export default function ModelRunsPage() {
         <div className="flex items-end gap-5">
           <Link href={'./'}>
 =======
+=======
+>>>>>>> mail-services
           <p className="text-3xl font-bold">QCL-{modelId}</p>
           <p className="text-slate-600">Inspection Model / Runs</p>
         </div>
         <div className="flex items-end gap-5">
           <Link href={`/models/${modelId}`}>
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
             <Button className="w-40 bg-slate-200 text-black" variant={'outline'}>
               View Model
             </Button>
@@ -122,6 +134,7 @@ export default function ModelRunsPage() {
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+<<<<<<< HEAD
 <<<<<<< HEAD
         {runs.map((run) => (
           <Card key={run.id} className="relative pt-0">
@@ -148,6 +161,8 @@ export default function ModelRunsPage() {
           </Card>
         ))}
 =======
+=======
+>>>>>>> mail-services
         {runs.length === 0 ? (
           <div className="col-span-3 py-10 text-center text-gray-500">
             No runs found for this model.
@@ -201,7 +216,10 @@ export default function ModelRunsPage() {
             </Card>
           ))
         )}
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
       </div>
     </div>
   )

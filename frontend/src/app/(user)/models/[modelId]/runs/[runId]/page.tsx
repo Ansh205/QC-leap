@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useState } from 'react'
 
 export default function ModelRunDetailPage() {
@@ -24,6 +25,8 @@ export default function ModelRunDetailPage() {
     },
   ]
 =======
+=======
+>>>>>>> mail-services
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { runs as runsAPI, images as imagesAPI } from '@/lib/api'
@@ -109,12 +112,16 @@ export default function ModelRunDetailPage() {
     activeTab === 'defective'
       ? defectiveImages
       : results.filter((r) => r.prediction !== 'defective')
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
 
   return (
     <div className="py-8">
       <div className="mt-0.5 flex justify-between">
         <div>
+<<<<<<< HEAD
 <<<<<<< HEAD
           <p className="text-3xl font-bold">QCL-1</p>
           <p className="text-slate-600">Inspection Model / Run-51</p>
@@ -122,6 +129,8 @@ export default function ModelRunDetailPage() {
         <div className="flex items-end gap-5">
           <Link href={'../'}>
 =======
+=======
+>>>>>>> mail-services
           <p className="text-3xl font-bold">QCL-{modelId}</p>
           <p className="text-slate-600">
             Inspection Model / Run-{run.run_number}
@@ -140,7 +149,10 @@ export default function ModelRunDetailPage() {
         </div>
         <div className="flex items-end gap-5">
           <Link href={`/models/${modelId}`}>
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
             <Button className="w-40 bg-slate-200 text-black" variant={'outline'}>
               View Model
             </Button>
@@ -157,6 +169,7 @@ export default function ModelRunDetailPage() {
             }`}
           >
 <<<<<<< HEAD
+<<<<<<< HEAD
             Defective (0)
           </button>
           <button
@@ -169,6 +182,8 @@ export default function ModelRunDetailPage() {
           >
             Non-Defective (0)
 =======
+=======
+>>>>>>> mail-services
             Defective ({defectiveImages.length})
           </button>
           <button
@@ -178,11 +193,15 @@ export default function ModelRunDetailPage() {
             }`}
           >
             Normal ({results.length - defectiveImages.length})
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
           </button>
         </div>
 
         <div className="mt-10 grid grid-cols-4 gap-6">
+<<<<<<< HEAD
 <<<<<<< HEAD
           {images.map((image) => (
             <Card key={image.id} className="relative pt-0">
@@ -195,6 +214,8 @@ export default function ModelRunDetailPage() {
             </Card>
           ))}
 =======
+=======
+>>>>>>> mail-services
           {displayedImages.map((result) => (
             <Card key={result.id} className="relative pt-0">
               <div className="overflow-hidden rounded-t-md bg-gray-100">
@@ -220,7 +241,10 @@ export default function ModelRunDetailPage() {
               No {activeTab} images found in this run.
             </div>
           )}
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
         </div>
       </div>
     </div>

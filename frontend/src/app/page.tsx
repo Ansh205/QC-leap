@@ -11,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { CheckCircle2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -19,6 +20,8 @@ import { useForm, SubmitHandler } from 'react-hook-form'
 interface SignInFormInputs {
   email: string
 =======
+=======
+>>>>>>> mail-services
 import {
   CheckCircle2,
   Factory,
@@ -36,17 +39,23 @@ import { auth } from '@/lib/api'
 
 interface SignInFormInputs {
   username: string
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
   password: string
 }
 
 interface SignUpFormInputs {
+<<<<<<< HEAD
 <<<<<<< HEAD
   company_name: string
   email: string
   password: string
   confirm_password: string
 =======
+=======
+>>>>>>> mail-services
   username: string
   email: string
   full_name: string
@@ -56,11 +65,15 @@ interface SignUpFormInputs {
   company_name: string
   company_description: string
   company_industry: string
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
 }
 
 export default function HomePage() {
   const [showSignIn, setShowSignIn] = useState(true)
+<<<<<<< HEAD
 <<<<<<< HEAD
   const router = useRouter()
 
@@ -248,6 +261,8 @@ export default function HomePage() {
   )
 }
 =======
+=======
+>>>>>>> mail-services
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -694,4 +709,7 @@ export default function HomePage() {
     </div>
   )
 }
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services

@@ -27,6 +27,7 @@ class Settings(BaseSettings):
 
     # Redis
     REDIS_HOST: str = "localhost"
+<<<<<<< HEAD
     REDIS_PORT: int = 6380
     REDIS_DB: int = 0
     REDIS_PASSWORD: str = ""
@@ -35,6 +36,22 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: Optional[str] = None
 
+=======
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: str = ""
+    REDIS_CACHE_TTL: int = 300  # 5 minutes default
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    OPENAI_API_KEY: Optional[str] = None
+
+    # Email
+    MAIL_USERNAME: Optional[str] = None
+    MAIL_PASSWORD: Optional[str] = None
+    MAIL_SERVER: Optional[str] = "smtp.gmail.com"
+    MAIL_PORT: Optional[int] = 587
+
+>>>>>>> mail-services
     class Config:
         env_file = ".env"
         case_sensitive = True

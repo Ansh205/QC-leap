@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { Button } from '@/components/ui/button'
 
 export default function Training() {
@@ -12,6 +13,8 @@ export default function Training() {
 
       <Button className="bg-green-600 text-white hover:bg-green-500">Start Training</Button>
 =======
+=======
+>>>>>>> mail-services
 'use client'
 import { Button } from '@/components/ui/button'
 import { useState, useEffect, useRef } from 'react'
@@ -282,7 +285,10 @@ export default function Training({
           )}
         </div>
       )}
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
     </div>
   )
 }

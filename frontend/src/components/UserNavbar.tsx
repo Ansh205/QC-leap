@@ -1,8 +1,12 @@
 'use client'
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import { useState, useEffect } from 'react'
 >>>>>>> master
+=======
+import { useState, useEffect } from 'react'
+>>>>>>> mail-services
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+<<<<<<< HEAD
 <<<<<<< HEAD
 import { Bell, ChartColumnStacked, UserCog } from 'lucide-react'
 import Link from 'next/link'
@@ -24,6 +29,8 @@ export default function Navbar() {
     router.push('/')
   }
 =======
+=======
+>>>>>>> mail-services
 import { Bell, Building2, ChartColumnStacked, LogOut, UserCog, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -54,7 +61,10 @@ export default function Navbar() {
     router.push('/')
   }
 
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
   return (
     <nav className="fixed top-0 left-0 z-50 flex h-14 w-full items-center border-b bg-white px-6">
       <div className="flex w-full items-center justify-between">
@@ -63,22 +73,29 @@ export default function Navbar() {
         </Link>
         <div className="flex items-center gap-9">
 <<<<<<< HEAD
+<<<<<<< HEAD
           <Button variant={'ghost'} size={'icon'}>
             <Bell className="size-6" />
           </Button>
 =======
+=======
+>>>>>>> mail-services
           <NotificationBell />
           <Link href={'/chatbot'}>
             <Button variant={'ghost'} size={'icon'} title="AI Assistant">
               <MessageSquare className="size-6" />
             </Button>
           </Link>
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
           <Link href={'/stats'}>
             <Button variant={'ghost'} size={'icon'}>
               <ChartColumnStacked className="size-6" />
             </Button>
           </Link>
+<<<<<<< HEAD
 <<<<<<< HEAD
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -104,6 +121,8 @@ export default function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
 =======
+=======
+>>>>>>> mail-services
           {!loading && isCompanyAdmin && (
             <Link href={'/company'}>
               <Button variant={'ghost'} size={'icon'} title="Company Management">
@@ -119,7 +138,10 @@ export default function Navbar() {
           <Button variant={'ghost'} size={'icon'} title="Log Out" onClick={handleSignOut}>
             <LogOut className="size-6 text-red-600" />
           </Button>
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
         </div>
       </div>
     </nav>

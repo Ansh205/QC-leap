@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useState } from 'react'
 
 export default function GeneratedImages() {
@@ -59,6 +60,8 @@ export default function GeneratedImages() {
         Generate Image
       </Button>
 =======
+=======
+>>>>>>> mail-services
 import { useState, useEffect, useRef } from 'react'
 import { models as modelsAPI, images as imagesAPI, Image } from '@/lib/api'
 import { Loader2, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react'
@@ -328,7 +331,10 @@ export default function GeneratedImages({
           </div>
         </div>
       )}
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
     </div>
   )
 }

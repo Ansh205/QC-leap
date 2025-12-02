@@ -1,14 +1,20 @@
 {
   "compilerOptions": {
 <<<<<<< HEAD
+<<<<<<< HEAD
     "lib": ["dom", "dom.iterable", "esnext"],
 =======
+=======
+>>>>>>> mail-services
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -28,12 +34,18 @@
     "baseUrl": ".",
     "paths": {
 <<<<<<< HEAD
+<<<<<<< HEAD
       "@/*": ["./src/*"]
 =======
       "@/*": [
         "./src/*"
       ]
 >>>>>>> master
+=======
+      "@/*": [
+        "./src/*"
+      ]
+>>>>>>> mail-services
     },
     "target": "ES2017"
   },
@@ -45,15 +57,21 @@
     "eslint.config.mjs",
     ".next\\dev/types/**/*.ts",
 <<<<<<< HEAD
+<<<<<<< HEAD
     ".next\\dev/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 =======
+=======
+>>>>>>> mail-services
     ".next\\dev/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
   ]
+<<<<<<< HEAD
 >>>>>>> master
+=======
+>>>>>>> mail-services
 }
