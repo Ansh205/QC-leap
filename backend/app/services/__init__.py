@@ -1,0 +1,6 @@
+"""
+Services package - Business logic layer
+"""
+from app.services.notification_service import notification_service
+
+__all__ = ['notification_service']
