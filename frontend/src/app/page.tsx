@@ -226,7 +226,7 @@ export default function HomePage() {
                     </div>
                   )}
                   <div className="grid gap-3">
-                    <Label htmlFor="username">Username or Email</Label>
+                    <Label htmlFor="username">Username or Email </Label>
                     <Input
                       id="username"
                       type="text"
