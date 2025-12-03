@@ -31,7 +31,7 @@ class UserService:
         return db.query(User).filter(User.id == user_id).first()
 
     @staticmethod
-    def create(db: Session, user_in: UserCreate) -> User:
+    def create(db: Session, user_in: UserCreate, is_active: bool = True) -> User:
         """Create new user with optional company"""
         company_id = None
         role = UserRole.MEMBER
@@ -59,6 +59,7 @@ class UserService:
             company_id=company_id,
             role=role,
             permission=permission,
+            is_active=is_active,
         )
         db.add(db_user)
         db.commit()

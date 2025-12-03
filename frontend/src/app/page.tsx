@@ -44,6 +44,9 @@ interface SignUpFormInputs {
 
 export default function HomePage() {
   const [showSignIn, setShowSignIn] = useState(true)
+  const [showOTP, setShowOTP] = useState(false)
+  const [tempToken, setTempToken] = useState('')
+  const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -73,12 +76,27 @@ export default function HomePage() {
     }
   }
 
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await auth.verifyOtp(tempToken, otp)
+      router.push('/models')
+    } catch (err: any) {
+      setError(err.message || 'Invalid OTP')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // --- Sign Up Form Logic ---
   const {
     register: registerSignUp,
     handleSubmit: handleSubmitSignUp,
     reset: resetSignUp,
     trigger: triggerSignUp,
+    getValues: getValuesSignUp,
   } = useForm<SignUpFormInputs>()
 
   const handleNextStep = async () => {
@@ -118,13 +136,13 @@ export default function HomePage() {
     try {
       const companyData = data.is_company_admin
         ? {
-            name: data.company_name,
-            description: data.company_description || undefined,
-            industry: data.company_industry || undefined,
-          }
+          name: data.company_name,
+          description: data.company_description || undefined,
+          industry: data.company_industry || undefined,
+        }
         : undefined
 
-      await auth.register(
+      const response = await auth.register(
         data.email,
         data.username,
         data.password,
@@ -132,9 +150,17 @@ export default function HomePage() {
         data.is_company_admin,
         companyData
       )
-      setSuccessMessage('Account created successfully! Please sign in to continue.')
-      setShowSignIn(true)
-      resetSignUp()
+
+      if (response.require_otp) {
+        setTempToken(response.temp_token)
+        setSuccessMessage(response.message || 'Please enter the OTP sent to your email')
+        setSignupStep(3) // Move to OTP step
+      } else {
+        // Fallback for old behavior (shouldn't happen with new backend)
+        setSuccessMessage('Account created successfully! Please sign in to continue.')
+        setShowSignIn(true)
+        resetSignUp()
+      }
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     } finally {
@@ -225,6 +251,7 @@ export default function HomePage() {
                       {error}
                     </div>
                   )}
+
                   <div className="grid gap-3">
                     <Label htmlFor="username">Username or Email</Label>
                     <Input
@@ -384,6 +411,36 @@ export default function HomePage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Step 3: OTP Verification */}
+                  {signupStep === 3 && (
+                    <div className="grid gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 mb-4">
+                        <div className="mb-1 flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-blue-600" />
+                          <p className="text-sm font-semibold text-blue-900">Verify Email</p>
+                        </div>
+                        <p className="text-xs leading-relaxed text-blue-700">
+                          We've sent a verification code to {getValuesSignUp('email')}.
+                        </p>
+                      </div>
+
+                      <Label htmlFor="otp">One-Time Password</Label>
+                      <Input
+                        id="otp"
+                        type="text"
+                        placeholder="Enter 6-digit OTP"
+                        disabled={loading}
+                        className="h-11 text-center text-lg tracking-widest"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        maxLength={6}
+                      />
+                      <p className="text-xs text-slate-500 text-center">
+                        Check your email for the code. It expires in 5 minutes.
+                      </p>
+                    </div>
+                  )}
                 </form>
               )}
             </CardContent>
@@ -405,6 +462,7 @@ export default function HomePage() {
                       type="button"
                       onClick={() => {
                         setShowSignIn(false)
+                        setShowOTP(false)
                         setError('')
                         setSuccessMessage('')
                         resetSignIn()
@@ -461,6 +519,17 @@ export default function HomePage() {
                         {loading ? 'Creating...' : 'Create Account'}
                       </Button>
                     </div>
+                  )}
+
+                  {signupStep === 3 && (
+                    <Button
+                      type="button"
+                      className="h-11 w-full bg-blue-600 hover:bg-blue-700"
+                      onClick={handleOtpSubmit}
+                      disabled={loading}
+                    >
+                      {loading ? 'Verifying...' : 'Verify & Create Account'} <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
                   )}
 
                   <div className="text-center text-sm text-slate-500">
