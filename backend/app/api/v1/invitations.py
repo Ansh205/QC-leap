@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 from app.core.deps import get_current_active_user
@@ -7,6 +7,7 @@ from app.models.user import User
 from app.schemas.invitation import InvitationCreate, InvitationResponse
 from app.schemas.user import UserResponse
 from app.services.invitation_service import invitation_service
+from app.services.mail_service import send_invitation_email
 from app.core.security import verify_password
 
 router = APIRouter()
@@ -15,6 +16,7 @@ router = APIRouter()
 @router.post("/", response_model=InvitationResponse, status_code=status.HTTP_201_CREATED)
 def create_invitation(
     invitation_in: InvitationCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -28,11 +30,22 @@ def create_invitation(
     if not verify_password(invitation_in.current_password, current_user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
 
+    invitation_in.permission = invitation_in.permission.upper()
+
     if invitation_in.permission not in ["INSPECT_ONLY", "INSPECT_AND_TRAIN"]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid permission")
 
     try:
         invitation = invitation_service.create_invitation(db=db, invitation_in=invitation_in, company_id=current_user.company_id, invited_by_user_id=current_user.id)
+        
+        if invitation.target_user and invitation.target_user.email:
+            background_tasks.add_task(
+                send_invitation_email,
+                to_email=invitation.target_user.email,
+                company_name=current_user.company.name,
+                inviter_name=current_user.full_name or current_user.username
+            )
+            
         return invitation
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -49,7 +62,7 @@ def list_invitations(db: Session = Depends(get_db), current_user: User = Depends
 
 
 @router.post("/{invitation_id}/resend", response_model=InvitationResponse)
-def resend_invitation(invitation_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+def resend_invitation(invitation_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
     """Resend an invitation"""
     if current_user.role != "COMPANY_ADMIN":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only company admins can resend invitations")
@@ -59,7 +72,18 @@ def resend_invitation(invitation_id: int, db: Session = Depends(get_db), current
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invitation not found")
 
     try:
-        return invitation_service.resend_invitation(db=db, invitation_id=invitation_id)
+        invitation = invitation_service.resend_invitation(db=db, invitation_id=invitation_id)
+        
+        # Send invitation email
+        if invitation.target_user and invitation.target_user.email:
+            background_tasks.add_task(
+                send_invitation_email,
+                to_email=invitation.target_user.email,
+                company_name=current_user.company.name,
+                inviter_name=current_user.full_name or current_user.username
+            )
+            
+        return invitation
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
