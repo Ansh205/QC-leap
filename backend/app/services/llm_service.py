@@ -9,6 +9,10 @@ from langchain_core.messages import HumanMessage
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
 
 # Loading environment variables and OpenAI API key
 load_dotenv()
@@ -96,6 +100,32 @@ def llm_report(perfect_image_path,defective_image_path,model_features=None):
         return {"response": "Error: Failed to generate report."} # Check for empty response
     
     return {"response": response.content} # Return the generated report
+
+# Function to generate PDF from text report
+def generate_pdf_report(report_text: str, output_path: str) -> str:
+    try:
+        doc = SimpleDocTemplate(output_path, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
+        
+        # Add Title
+        story.append(Paragraph("Defect Inspection Report", styles["Title"]))
+        story.append(Spacer(1, 12))
+        
+        # Add Content
+        # Markdown to simple text conversion (basic)
+        # Replace **bold** with <b>bold</b> for reportlab
+        import re
+        formatted_text = report_text.replace('\n', '<br/>')
+        formatted_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', formatted_text)
+        
+        story.append(Paragraph(formatted_text, styles["Normal"]))
+        
+        doc.build(story)
+        return output_path
+    except Exception as e:
+        print(f"Failed to generate PDF: {e}")
+        return None
 
 # ---------------------- CHAT BOT MODULE ----------------------
 # Pydantic model for chat request

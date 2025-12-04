@@ -16,12 +16,17 @@ class TrainingJobService:
         db: Session,
         model_id: int,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
+        job_type: Optional[JobType] = None
     ) -> List[TrainingJob]:
         """Get all training jobs for an inspection model"""
+        query = db.query(TrainingJob).filter(TrainingJob.inspection_model_id == model_id)
+        
+        if job_type:
+            query = query.filter(TrainingJob.job_type == job_type)
+            
         return (
-            db.query(TrainingJob)
-            .filter(TrainingJob.inspection_model_id == model_id)
+            query
             .order_by(TrainingJob.created_at.desc())
             .offset(skip)
             .limit(limit)

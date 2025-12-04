@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { runs as runsAPI, images as imagesAPI } from '@/lib/api'
-import { Loader2 } from 'lucide-react'
+import { Loader2, FileText } from 'lucide-react'
 
 type RunDetails = {
   id: number
@@ -34,6 +34,7 @@ export default function ModelRunDetailPage() {
   const [results, setResults] = useState<InferenceResult[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [downloadingReportId, setDownloadingReportId] = useState<number | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,6 +88,25 @@ export default function ModelRunDetailPage() {
     activeTab === 'defective'
       ? defectiveImages
       : results.filter((r) => r.prediction !== 'defective')
+
+  const handleDownloadReport = async (resultId: number) => {
+    try {
+      setDownloadingReportId(resultId)
+      const blob = await runsAPI.downloadReport(runId, resultId)
+      const url = window.URL.createObjectURL(new Blob([blob as any]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `report_${resultId}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.parentNode?.removeChild(link)
+    } catch (err) {
+      console.error('Failed to download report', err)
+      alert('Failed to download report')
+    } finally {
+      setDownloadingReportId(null)
+    }
+  }
 
   return (
     <div className="py-8">
@@ -154,6 +174,22 @@ export default function ModelRunDetailPage() {
                 <p className="text-sm text-gray-500">
                   Confidence: {(result.confidence * 100).toFixed(1)}%
                 </p>
+                {activeTab === 'defective' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 w-full"
+                    disabled={downloadingReportId === result.id}
+                    onClick={() => handleDownloadReport(result.id)}
+                  >
+                    {downloadingReportId === result.id ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <FileText className="mr-2 h-4 w-4" />
+                    )}
+                    {downloadingReportId === result.id ? 'Generating...' : 'Download Report'}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}

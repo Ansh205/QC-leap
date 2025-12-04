@@ -25,10 +25,16 @@ export default function RunDialog({ modelId }: { modelId: number }) {
     setFiles((prev) => [...prev, ...acceptedFiles])
   }, [])
 
+  const onDropRejected = useCallback((fileRejections: any[]) => {
+    alert(`${fileRejections.length} files were rejected. Please ensure they are valid images.`)
+    console.log('Rejected files:', fileRejections)
+  }, [])
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
+    onDropRejected,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png'],
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp', '.bmp', '.tiff'],
     },
   })
 
@@ -108,22 +114,25 @@ export default function RunDialog({ modelId }: { modelId: number }) {
           </div>
 
           {files.length > 0 && (
-            <div className="max-h-40 space-y-2 overflow-y-auto">
-              {files.map((file, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between rounded bg-gray-50 p-2 text-sm"
-                >
-                  <span className="truncate">{file.name}</span>
-                  <button
-                    onClick={() => removeFile(i)}
-                    className="text-gray-500 hover:text-red-500"
+            <>
+              <p className="text-sm font-medium text-gray-700">Selected Files ({files.length})</p>
+              <div className="max-h-40 space-y-2 overflow-y-auto">
+                {files.map((file, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between rounded bg-gray-50 p-2 text-sm"
                   >
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
+                    <span className="truncate">{file.name}</span>
+                    <button
+                      onClick={() => removeFile(i)}
+                      className="text-gray-500 hover:text-red-500"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 

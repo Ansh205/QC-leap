@@ -49,7 +49,7 @@ export default function Training({
 
   const checkStatus = async () => {
     try {
-      const statusData = await modelsAPI.getTrainingStatus(modelId)
+      const statusData = await modelsAPI.getTrainingStatus(modelId, 'FULL_TRAINING')
       if (statusData.has_training_job && statusData.training_job) {
         const job = statusData.training_job
 
@@ -90,7 +90,7 @@ export default function Training({
 
     pollInterval.current = setInterval(async () => {
       try {
-        const statusData = await modelsAPI.getTrainingStatus(modelId)
+        const statusData = await modelsAPI.getTrainingStatus(modelId, 'FULL_TRAINING')
         if (statusData.has_training_job && statusData.training_job) {
           const job = statusData.training_job
           setStatus(job.status)

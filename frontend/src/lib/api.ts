@@ -23,13 +23,13 @@ export interface Model {
   name: string
   description?: string
   status:
-  | 'created'
-  | 'uploading'
-  | 'generating_data'
-  | 'awaiting_validation'
-  | 'training'
-  | 'ready'
-  | 'failed'
+    | 'created'
+    | 'uploading'
+    | 'generating_data'
+    | 'awaiting_validation'
+    | 'training'
+    | 'ready'
+    | 'failed'
   accuracy?: string
   precision?: string
   recall?: string
@@ -140,19 +140,19 @@ export const auth = {
     const formData = new FormData()
     formData.append('username', username)
     formData.append('password', password)
-    const response = await api.post('/auth/login', formData, {
+    const response = (await api.post('/auth/login', formData, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    }) as any
+    })) as any
     if (response.access_token) {
       localStorage.setItem('qc_leap_token', response.access_token)
     }
     return response
   },
   verifyOtp: async (tempToken: string, otp: string) => {
-    const response = await api.post('/auth/verify-otp', {
+    const response = (await api.post('/auth/verify-otp', {
       temp_token: tempToken,
       otp,
-    }) as any
+    })) as any
     if (response.access_token) {
       localStorage.setItem('qc_leap_token', response.access_token)
     }
@@ -207,8 +207,9 @@ export const models = {
   generateSynthetic: async (id: number) => {
     return api.post(`/models/${id}/generate-synthetic`)
   },
-  getTrainingStatus: async (id: number): Promise<TrainingStatus> => {
-    return api.get(`/models/${id}/training-status`)
+  getTrainingStatus: async (id: number, jobType?: string): Promise<TrainingStatus> => {
+    const params = jobType ? { job_type: jobType } : {}
+    return api.get(`/models/${id}/training-status`, { params })
   },
   getStatistics: async (id: number) => {
     return api.get(`/models/${id}/statistics`)
@@ -246,6 +247,8 @@ export const runs = {
   list: (modelId: number) => api.get(`/models/${modelId}/runs`),
   get: (runId: number) => api.get(`/runs/${runId}`),
   getResults: (runId: number) => api.get(`/runs/${runId}/results`),
+  downloadReport: (runId: number, resultId: number) =>
+    api.get(`/runs/${runId}/results/${resultId}/report`, { responseType: 'blob' }),
 }
 
 export const images = {
@@ -362,7 +365,7 @@ export const notifications = {
     return api.get('/notifications', { params: { unread_only: unreadOnly, limit } })
   },
   getUnreadCount: async (): Promise<number> => {
-    const res = await api.get('/notifications/unread-count') as any
+    const res = (await api.get('/notifications/unread-count')) as any
     return res.count
   },
   markAsRead: async (id: number) => {

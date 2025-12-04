@@ -362,6 +362,7 @@ def get_training_jobs(
 @router.get("/{model_id}/training-status")
 def get_training_status(
     model_id: int,
+    job_type: str = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -381,10 +382,18 @@ def get_training_status(
         )
 
     from app.services.training_job_service import training_job_service
-    from app.models.training_job import TrainingStatus
+    from app.models.training_job import TrainingStatus, JobType
 
     # Get most recent training job
-    jobs = training_job_service.get_by_model(db=db, model_id=model_id, skip=0, limit=1)
+    # Convert string job_type to Enum if provided
+    job_type_enum = None
+    if job_type:
+        try:
+            job_type_enum = JobType(job_type)
+        except ValueError:
+            pass # Ignore invalid types or handle error
+
+    jobs = training_job_service.get_by_model(db=db, model_id=model_id, skip=0, limit=1, job_type=job_type_enum)
 
     if not jobs:
         return {
