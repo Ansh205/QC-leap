@@ -23,13 +23,13 @@ export interface Model {
   name: string
   description?: string
   status:
-    | 'created'
-    | 'uploading'
-    | 'generating_data'
-    | 'awaiting_validation'
-    | 'training'
-    | 'ready'
-    | 'failed'
+  | 'created'
+  | 'uploading'
+  | 'generating_data'
+  | 'awaiting_validation'
+  | 'training'
+  | 'ready'
+  | 'failed'
   accuracy?: string
   precision?: string
   recall?: string
@@ -142,7 +142,17 @@ export const auth = {
     formData.append('password', password)
     const response = await api.post('/auth/login', formData, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    })
+    }) as any
+    if (response.access_token) {
+      localStorage.setItem('qc_leap_token', response.access_token)
+    }
+    return response
+  },
+  verifyOtp: async (tempToken: string, otp: string) => {
+    const response = await api.post('/auth/verify-otp', {
+      temp_token: tempToken,
+      otp,
+    }) as any
     if (response.access_token) {
       localStorage.setItem('qc_leap_token', response.access_token)
     }
@@ -163,7 +173,7 @@ export const auth = {
       full_name,
       is_company_admin,
       company_data,
-    })
+    }) as any
   },
   getCurrentUser: async (): Promise<User> => {
     return api.get('/users/me')
@@ -352,7 +362,7 @@ export const notifications = {
     return api.get('/notifications', { params: { unread_only: unreadOnly, limit } })
   },
   getUnreadCount: async (): Promise<number> => {
-    const res = await api.get('/notifications/unread-count')
+    const res = await api.get('/notifications/unread-count') as any
     return res.count
   },
   markAsRead: async (id: number) => {

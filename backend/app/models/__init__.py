@@ -6,6 +6,8 @@ from app.models.annotation import Annotation
 from app.models.training_job import TrainingJob
 from app.models.invitation import Invitation, InvitationStatus
 from app.models.notification import Notification, NotificationType
+from app.models.model_run import ModelRun, RunStatus
+from app.models.inference_result import InferenceResult
 
 __all__ = [
     "User",
@@ -19,5 +21,8 @@ __all__ = [
     "Invitation",
     "InvitationStatus",
     "Notification",
-    "NotificationType"
+    "NotificationType",
+    "ModelRun",
+    "RunStatus",
+    "InferenceResult"
 ]
