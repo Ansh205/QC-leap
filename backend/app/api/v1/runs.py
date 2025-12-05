@@ -216,7 +216,7 @@ def download_report(
     pdf_filename = f"report_{result_id}.pdf"
     pdf_path = reports_dir / pdf_filename
     
-    generated_pdf_path = generate_pdf_report(report_text, str(pdf_path))
+    generated_pdf_path = generate_pdf_report(report_text, str(pdf_path), defective_path)
     
     if not generated_pdf_path:
         raise HTTPException(status_code=500, detail="Failed to create PDF file")

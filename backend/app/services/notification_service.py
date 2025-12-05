@@ -17,7 +17,8 @@ class NotificationService:
         title: str,
         message: str,
         related_type: Optional[str] = None,
-        related_id: Optional[int] = None
+        related_id: Optional[int] = None,
+        send_email: bool = True
     ) -> Notification:
         """Create a new notification"""
         notification = Notification(
@@ -34,16 +35,17 @@ class NotificationService:
         db.refresh(notification)
 
         # Send email notification
-        try:
-            user = user_service.get_by_id(db, user_id)
-            if user and user.email:
-                send_message(
-                    subject=f"QC-Leap Notification: {title}",
-                    message=message,
-                    to_email=user.email
-                )
-        except Exception as e:
-            print(f"Failed to send email notification: {e}")
+        if send_email:
+            try:
+                user = user_service.get_by_id(db, user_id)
+                if user and user.email:
+                    send_message(
+                        subject=f"QC-Leap Notification: {title}",
+                        message=message,
+                        to_email=user.email
+                    )
+            except Exception as e:
+                print(f"Failed to send email notification: {e}")
 
         return notification
 
@@ -125,7 +127,8 @@ class NotificationService:
             title="Company Invitation",
             message=f"{inviter_name} invited you to join {company_name}",
             related_type="invitation",
-            related_id=invitation_id
+            related_id=invitation_id,
+            send_email=False # Suppress generic email as we send a specific one
         )
 
 
