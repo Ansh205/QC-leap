@@ -10,10 +10,6 @@ import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card'
 import {
   Table,
@@ -46,7 +42,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Building2, Mail, MoreVertical, Save, Search, Shield, Trash2, UserPlus } from 'lucide-react'
+import { Building2, Mail, MoreVertical, Save, Search, Shield, Trash2, UserPlus, Factory } from 'lucide-react'
 import { toast } from 'sonner'
 import { auth, invitations as invitationsAPI, company as companyAPI, Invitation as InvitationType } from '@/lib/api'
 
@@ -141,7 +137,8 @@ export default function CompanyManagementPage() {
           companyAPI.getMembers()
         ])
         setInvitations(invitationsList)
-        setMembers(membersList)
+        // [FIX] Double cast to avoid TS overlap error: AxiosResponse -> unknown -> any[]
+        setMembers(membersList as unknown as any[])
       } catch (error: any) {
         toast.error(error.message || 'Failed to load data')
       } finally {
@@ -169,8 +166,8 @@ export default function CompanyManagementPage() {
     try {
       await companyAPI.updateCompany(
         data.companyName,
-        data.companyIndustry,
-        data.companyDescription,
+        data.companyIndustry || '',
+        data.companyDescription || '',
         data.currentPassword
       )
 
@@ -194,7 +191,7 @@ export default function CompanyManagementPage() {
     }
 
     try {
-      const invitation = await invitationsAPI.create(newIdentifier, newPermission, adminPassword)
+      const invitation = await invitationsAPI.create(newIdentifier, newPermission, adminPassword) as unknown as InvitationType
       setInvitations((prev) => [...prev, invitation])
 
       // Reset form
@@ -211,7 +208,7 @@ export default function CompanyManagementPage() {
 
   const handleResendInvitation = async (id: number) => {
     try {
-      const updated = await invitationsAPI.resend(id)
+      const updated = await invitationsAPI.resend(id) as unknown as InvitationType
       setInvitations((prev) => prev.map((inv) => (inv.id === id ? updated : inv)))
       toast.success('Invitation resent')
     } catch (error: any) {
@@ -231,7 +228,7 @@ export default function CompanyManagementPage() {
 
   const handleRevokeInvitation = async (id: number) => {
     try {
-      const updated = await invitationsAPI.revoke(id)
+      const updated = await invitationsAPI.revoke(id) as unknown as InvitationType
       setInvitations((prev) => prev.map((inv) => (inv.id === id ? updated : inv)))
       toast.success('Invitation revoked')
     } catch (error: any) {
@@ -248,7 +245,8 @@ export default function CompanyManagementPage() {
 
     try {
       await companyAPI.updateMemberPermission(editingMember.id, editPermission, editPassword)
-      const updatedMembers = await companyAPI.getMembers()
+      // [FIX] Double cast to avoid TS overlap error: AxiosResponse -> unknown -> any[]
+      const updatedMembers = await companyAPI.getMembers() as unknown as any[]
       setMembers(updatedMembers)
       setEditingMember(null)
       setEditPermission('')
@@ -328,51 +326,124 @@ export default function CompanyManagementPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Company Management</h1>
-        <p className="text-slate-600">Manage your company information and team members</p>
+    <div className="container mx-auto py-8 space-y-8">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight">Company Management</h1>
+        <p className="text-slate-600">Manage your company profile and team access permissions.</p>
       </div>
 
-      <div className="mx-auto max-w-5xl space-y-6">
-        {/* Company Information Display Card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              <CardTitle>Company Information</CardTitle>
-            </div>
-            <CardDescription>Your current company details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Company Name</Label>
-                <p className="text-sm font-medium">{userData?.company?.name || 'Not set'}</p>
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Company Profile Card */}
+        <Card className="md:col-span-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100">
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row items-start gap-6">
+                <div className="p-4 bg-white rounded-xl shadow-sm text-blue-600 ring-1 ring-blue-100">
+                  <Building2 size={40} />
+                </div>
+                <div className="space-y-3 flex-1">
+                  <div>
+                    <h2 className="text-2xl font-bold text-blue-900">{userData?.company?.name || 'Company Name'}</h2>
+                    <p className="text-blue-700 font-medium">{userData?.company?.industry || 'Industry Not Set'}</p>
+                  </div>
+                  <p className="text-blue-800/80 leading-relaxed max-w-3xl">
+                    {userData?.company?.description || 'No description provided. You can add a description below to help team members identify this workspace.'}
+                  </p>
+                </div>
+                <div className="flex gap-4 self-start md:self-center">
+                   <div className="text-center px-4 py-2 bg-white/60 rounded-lg">
+                      <p className="text-2xl font-bold text-blue-900">{members.length}</p>
+                      <p className="text-xs text-blue-700 font-medium uppercase tracking-wider">Members</p>
+                   </div>
+                   <div className="text-center px-4 py-2 bg-white/60 rounded-lg">
+                      <p className="text-2xl font-bold text-blue-900">{invitations.filter(i => i.status === 'PENDING').length}</p>
+                      <p className="text-xs text-blue-700 font-medium uppercase tracking-wider">Pending</p>
+                   </div>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Industry</Label>
-                <p className="text-sm font-medium">{userData?.company?.industry || 'Not specified'}</p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <p className="text-sm font-medium">{userData?.company?.description || 'Not specified'}</p>
-            </div>
-          </CardContent>
+            </CardContent>
         </Card>
 
+        {/* Edit Company Form */}
+        <div className="md:col-span-3">
+          <div className="border rounded-xl p-1 bg-slate-50/50">
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+                <div className="mb-6">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Factory className="h-5 w-5 text-slate-500" />
+                        Update Details
+                    </h3>
+                    <p className="text-sm text-slate-500">Edit company name, industry and description.</p>
+                </div>
+                
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="companyName">Company Name</Label>
+                            <Input
+                                id="companyName"
+                                placeholder="Enter company name"
+                                {...form.register('companyName')}
+                                aria-invalid={!!form.formState.errors.companyName}
+                            />
+                            {form.formState.errors.companyName && (
+                                <p className="text-sm text-red-500">{form.formState.errors.companyName.message}</p>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="companyIndustry">Industry</Label>
+                            <Input
+                                id="companyIndustry"
+                                placeholder="e.g., Manufacturing, Automotive"
+                                {...form.register('companyIndustry')}
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="companyDescription">Description</Label>
+                        <Input
+                            id="companyDescription"
+                            placeholder="Brief description of the company"
+                            {...form.register('companyDescription')}
+                        />
+                    </div>
+
+                    <div className="pt-4 border-t">
+                         <div className="flex items-end gap-4">
+                            <div className="flex-1 space-y-2">
+                                <Label htmlFor="currentPassword">Confirm Password to Save</Label>
+                                <Input
+                                    id="currentPassword"
+                                    type="password"
+                                    placeholder="Enter your password"
+                                    {...form.register('currentPassword')}
+                                    aria-invalid={!!form.formState.errors.currentPassword}
+                                />
+                                {form.formState.errors.currentPassword && (
+                                    <p className="text-xs text-red-500">{form.formState.errors.currentPassword.message}</p>
+                                )}
+                            </div>
+                            <Button type="submit" disabled={isUpdating} className="min-w-[150px]">
+                                {isUpdating ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                         </div>
+                    </div>
+                </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
         {/* Team Members Section */}
-        <div>
-          <div className="mb-6 flex items-center justify-between">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Team Members</h2>
-              <p className="text-slate-600">Invite and manage team member access</p>
+              <h2 className="text-2xl font-bold">Team</h2>
+              <p className="text-slate-600">Manage access and invitations</p>
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="bg-blue-600 hover:bg-blue-700">
                   <UserPlus className="mr-2 h-4 w-4" />
                   Invite Member
                 </Button>
@@ -437,7 +508,7 @@ export default function CompanyManagementPage() {
           </div>
 
           {/* Filters and Search */}
-          <div className="mb-6 flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4">
             <div className="relative min-w-[250px] flex-1">
               <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
@@ -493,121 +564,44 @@ export default function CompanyManagementPage() {
           </div>
 
           {/* Members Table */}
-          <div className="rounded-md border">
+          <div className="rounded-md border bg-white overflow-hidden shadow-sm">
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-gray-50">
                 <TableRow>
-                  <TableHead>Username/Email</TableHead>
-                  <TableHead>Permission</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Sent Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="font-semibold text-gray-900">User</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Type</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Permission</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Status</TableHead>
+                  <TableHead className="font-semibold text-gray-900">Date</TableHead>
+                  <TableHead className="text-right font-semibold text-gray-900">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredInvitations.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      No team members found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredInvitations.map((invitation) => (
-                    <TableRow key={invitation.id}>
-                      <TableCell className="font-medium">{invitation.target_identifier}</TableCell>
+                {/* Active Members */}
+                {members.map((member) => (
+                    <TableRow key={`member-${member.id}`}>
                       <TableCell>
-                        <Badge className={getPermissionBadgeColor(invitation.permission as UserPermission)} variant="secondary">
-                          {getPermissionLabel(invitation.permission as UserPermission)}
-                        </Badge>
+                          <div>
+                              <p className="font-medium text-gray-900">{member.username}</p>
+                              <p className="text-xs text-gray-500">{member.email}</p>
+                          </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(invitation.status)} variant="secondary">
-                          {mapStatus(invitation.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{new Date(invitation.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {invitation.status === 'pending' && (
-                              <>
-                                <DropdownMenuItem onClick={() => handleResendInvitation(invitation.id)}>
-                                  <Mail className="mr-2 h-4 w-4" />
-                                  Resend Invitation
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleRevokeInvitation(invitation.id)}>
-                                  Revoke Invitation
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteInvitation(invitation.id)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          <div className="text-muted-foreground mt-4 text-sm">
-            Showing {filteredInvitations.length} of {invitations.length} invitation
-            {invitations.length !== 1 ? 's' : ''}
-          </div>
-        </div>
-
-        {/* Current Members Section */}
-        <div className="mt-12">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold">Current Members</h2>
-            <p className="text-slate-600">Manage permissions and remove members from your company</p>
-          </div>
-
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Permission</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {members.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
-                      No members found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  members.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell className="font-medium">{member.username}</TableCell>
-                      <TableCell>{member.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={member.role === 'COMPANY_ADMIN' ? 'default' : 'secondary'}>
-                          {member.role === 'COMPANY_ADMIN' ? 'Company Admin' : 'Member'}
-                        </Badge>
+                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700">
+                             {member.role === 'COMPANY_ADMIN' ? 'Admin' : 'Member'}
+                         </span>
                       </TableCell>
                       <TableCell>
                         <Badge className={getPermissionBadgeColor(member.permission)} variant="secondary">
                           {getPermissionLabel(member.permission)}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700">
+                             <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span> Active
+                         </span>
+                      </TableCell>
+                      <TableCell><span className="text-gray-500 text-xs">-</span></TableCell>
                       <TableCell className="text-right">
                         {member.role !== 'COMPANY_ADMIN' && member.id !== userData?.id && (
                           <DropdownMenu>
@@ -640,14 +634,65 @@ export default function CompanyManagementPage() {
                         )}
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
+                ))}
+
+                {/* Invitations */}
+                {filteredInvitations.map((invitation) => (
+                    <TableRow key={`invitation-${invitation.id}`}>
+                      <TableCell className="font-medium text-gray-600">{invitation.target_identifier}</TableCell>
+                      <TableCell><span className="text-xs text-gray-400">Invitation</span></TableCell>
+                      <TableCell>
+                        <Badge className={getPermissionBadgeColor(invitation.permission as UserPermission)} variant="secondary">
+                          {getPermissionLabel(invitation.permission as UserPermission)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(invitation.status)} variant="secondary">
+                          {mapStatus(invitation.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-500 text-xs">{new Date(invitation.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {invitation.status === 'pending' && (
+                              <>
+                                <DropdownMenuItem onClick={() => handleResendInvitation(invitation.id)}>
+                                  <Mail className="mr-2 h-4 w-4" />
+                                  Resend Invitation
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleRevokeInvitation(invitation.id)}>
+                                  Revoke Invitation
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteInvitation(invitation.id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  
+                  {members.length === 0 && filteredInvitations.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center text-gray-500">
+                          No members or invitations found matching your criteria.
+                        </TableCell>
+                      </TableRow>
+                  )}
               </TableBody>
             </Table>
-          </div>
-
-          <div className="text-muted-foreground mt-4 text-sm">
-            {members.length} company member{members.length !== 1 ? 's' : ''}
           </div>
         </div>
 
@@ -741,88 +786,6 @@ export default function CompanyManagementPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        {/* Update Company Information Section */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Update Company Information</h2>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <Card className="border-yellow-200 bg-yellow-50/50">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  <CardTitle>Edit Company Details</CardTitle>
-                </div>
-                <CardDescription>Update your company information with password verification</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <Input
-                    id="companyName"
-                    placeholder="Enter company name"
-                    {...form.register('companyName')}
-                    aria-invalid={!!form.formState.errors.companyName}
-                  />
-                  {form.formState.errors.companyName && (
-                    <p className="text-sm text-red-500">
-                      {form.formState.errors.companyName.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="companyIndustry">Industry</Label>
-                  <Input
-                    id="companyIndustry"
-                    placeholder="e.g., Manufacturing, Automotive"
-                    {...form.register('companyIndustry')}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="companyDescription">Description</Label>
-                  <Input
-                    id="companyDescription"
-                    placeholder="Brief description of the company"
-                    {...form.register('companyDescription')}
-                  />
-                </div>
-
-                <div className="border-t border-yellow-300 pt-4 mt-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Shield className="h-5 w-5 text-yellow-600" />
-                    <Label className="text-yellow-900 font-semibold">Verify Your Identity</Label>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword">Current Password *</Label>
-                    <Input
-                      id="currentPassword"
-                      type="password"
-                      placeholder="Enter current password to confirm changes"
-                      {...form.register('currentPassword')}
-                      aria-invalid={!!form.formState.errors.currentPassword}
-                    />
-                    {form.formState.errors.currentPassword && (
-                      <p className="text-sm text-red-500">
-                        {form.formState.errors.currentPassword.message}
-                      </p>
-                    )}
-                    <p className="text-xs text-yellow-800">
-                      Your password is required to update company information
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button type="submit" disabled={isUpdating} className="w-full">
-                  <Save className="mr-2 h-4 w-4" />
-                  {isUpdating ? 'Saving Changes...' : 'Save Company Information'}
-                </Button>
-              </CardFooter>
-            </Card>
-          </form>
-        </div>
-      </div>
     </div>
   )
 }

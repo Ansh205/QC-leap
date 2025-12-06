@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ImageIcon, Plus, Trash2, Globe, Lock } from 'lucide-react'
+import { ImageIcon, Plus, Trash2, Globe, Lock, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
@@ -191,10 +191,21 @@ export default function ModelsPage() {
 
     if (sortBy === 'date') {
       result.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime())
+    } else if (sortBy === 'accuracy') {
+      result.sort((a, b) => {
+        const accA = parseFloat(a.accuracy || '0')
+        const accB = parseFloat(b.accuracy || '0')
+        return accB - accA
+      })
     }
 
     return result
   }, [models, searchQuery, sortBy, filterStatus])
+
+  // Check if model has been successfully trained at least once
+  const isTrained = (model: Model) => {
+    return model.accuracy && parseFloat(model.accuracy) > 0
+  }
 
   return (
     <div className="py-8">
@@ -349,13 +360,18 @@ export default function ModelsPage() {
                   </Button>
                 </Link>
 
-                {model.status === 'Ready' ? (
-                  <span className="flex h-full items-center justify-center rounded-md bg-green-600 py-2 text-sm text-white hover:bg-green-700">
-                    Ready
-                  </span>
-                ) : model.status === 'Training' ? (
+                {model.status === 'Training' ? (
                   <span className="flex h-full w-full items-center justify-center rounded-md bg-blue-600 py-2 text-sm text-white">
                     Training {model.statusPercent ? `(${model.statusPercent}%)` : ''}
+                  </span>
+                ) : isTrained(model) ? (
+                  <span className="flex h-full items-center justify-center rounded-md bg-green-600 py-2 text-sm text-white hover:bg-green-700 gap-2">
+                    <CheckCircle className="h-4 w-4" /> Trained
+                  </span>
+                ) : model.status === 'Ready' ? (
+                   // Fallback for ready if no accuracy (unlikely but safe)
+                  <span className="flex h-full items-center justify-center rounded-md bg-green-600 py-2 text-sm text-white hover:bg-green-700">
+                    Ready
                   </span>
                 ) : model.status === 'Awaiting Validation' ? (
                   <span className="flex h-full w-full items-center justify-center rounded-md bg-orange-500 py-2 text-sm text-white">
