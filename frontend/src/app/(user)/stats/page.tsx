@@ -82,6 +82,7 @@ export default function StatsPage() {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top' as const,
@@ -111,7 +112,6 @@ export default function StatsPage() {
       {/* Header section starts */}
       <div className="flex items-start justify-between">
         <div>
-          {/* ADDED DESCRIPTIVE TEXT */}
           <p className="mt-0.5 text-3xl font-bold">Stats</p>
           <p className="text-slate-600">Defect Rate</p>
 
@@ -145,8 +145,10 @@ export default function StatsPage() {
       </div>
       {/* Header section ends */}
 
-      <Card className="flex h-[400px] w-full items-center justify-center p-6">
-        <Bar data={data} options={options} />
+      <Card className="mt-8 flex h-[400px] w-full items-center justify-center p-6">
+        <div className="relative h-full w-full">
+          <Bar data={data} options={options} />
+        </div>
       </Card>
     </div>
   )

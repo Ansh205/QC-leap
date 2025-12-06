@@ -395,7 +395,7 @@ export default function SampleImages({
     }, 100)
 
     return () => clearTimeout(timer)
-  }, [isDialogOpen, currentImageIndex, editingImageId])
+  }, [isDialogOpen, currentImageIndex, editingImageId, pendingImages])
 
   useEffect(() => {
     if (imageLoaded) {
@@ -650,13 +650,6 @@ export default function SampleImages({
     try {
       setLoading(true)
       // Process all remaining images as full-image defects
-      // We need to load each image to get dimensions, or just upload and assume full size?
-      // Better to load them. But for speed, maybe we can just upload and let backend handle?
-      // No, we need dimensions for canvas_data.
-
-      // For now, let's just process them one by one in background?
-      // Or just iterate.
-
       const remaining = pendingImages.slice(currentImageIndex)
 
       for (const pending of remaining) {
@@ -690,6 +683,29 @@ export default function SampleImages({
       alert('Failed to process all images')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDeletePending = () => {
+    if (pendingImages.length === 0) return
+    const newPending = [...pendingImages]
+    newPending.splice(currentImageIndex, 1)
+    setPendingImages(newPending)
+    
+    // If we deleted the last one
+    if (newPending.length === 0) {
+      setIsDialogOpen(false)
+      setCurrentImageIndex(0)
+      setPendingImages([])
+      setImageLoaded(false)
+      resetViewport()
+    } else {
+       // Adjust index if needed
+       if (currentImageIndex >= newPending.length) {
+         setCurrentImageIndex(newPending.length - 1)
+       }
+       setImageLoaded(false)
+       resetViewport()
     }
   }
 
@@ -822,28 +838,48 @@ export default function SampleImages({
             zoom.
           </p>
 
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 sm:justify-between">
             {!editingImageId && (
-              <div className="flex w-full justify-between">
-                <Button variant="destructive" onClick={handleSkipAll} disabled={loading}>
-                  {loading ? 'Processing...' : 'Skip All'}
-                </Button>
-                <Button variant="outline" onClick={handleSkipImage} disabled={loading}>
-                  {loading ? 'Processing...' : 'Skip'}
-                </Button>
+              <div className="flex w-full items-center justify-between">
+                <div className="flex gap-2">
+                  <Button variant="destructive" onClick={handleSkipAll} disabled={loading}>
+                    {loading ? 'Processing...' : 'Skip All'}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="text-red-500 hover:bg-red-50 hover:text-red-700" 
+                    onClick={handleDeletePending} 
+                    disabled={loading}
+                  >
+                    <Trash2 size={16} className="mr-2" /> Delete
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={handleSkipImage} disabled={loading}>
+                    {loading ? 'Processing...' : 'Skip'}
+                  </Button>
+                  <Button
+                    onClick={handleSaveDefect}
+                    disabled={(currentRect.width === 0 && !editingImageId) || !imageLoaded || loading}
+                  >
+                    {loading ? 'Saving...' : 'Save & Continue'}
+                  </Button>
+                </div>
               </div>
             )}
             {editingImageId && (
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={loading}>
-                Cancel
-              </Button>
+              <div className="flex w-full justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={loading}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveDefect}
+                  disabled={!imageLoaded || loading}
+                >
+                  {loading ? 'Saving...' : 'Update'}
+                </Button>
+              </div>
             )}
-            <Button
-              onClick={handleSaveDefect}
-              disabled={(currentRect.width === 0 && !editingImageId) || !imageLoaded || loading}
-            >
-              {loading ? 'Saving...' : editingImageId ? 'Update' : 'Save & Continue'}
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
