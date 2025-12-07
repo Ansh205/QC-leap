@@ -70,13 +70,21 @@ def get_stats_overview(
         TrainingJob.status == TrainingStatus.FAILED   
     ).count() if model_ids else 0
 
-    # Daily inspection stats
-    start_date = datetime.utcnow() - timedelta(days=days)
+    # --- FIX: Daily inspection stats logic ---
+    # We want the range to end at 'Tomorrow 00:00' so that 'Today' is fully included.
+    # Start date is (Today - (days - 1)) to get exactly 'days' number of bars including today.
+    
+    now = datetime.utcnow()
+    # Reset to start of today (00:00:00)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Calculate start date (e.g. 6 days ago + today = 7 days)
+    start_date = today_start - timedelta(days=days - 1)
 
     daily_stats = []
     for i in range(days):
-        day = start_date + timedelta(days=i)
-        day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+        # Calculate window for this specific day
+        day_start = start_date + timedelta(days=i)
         day_end = day_start + timedelta(days=1)
 
         defective_count = db.query(Image).filter(
@@ -94,8 +102,8 @@ def get_stats_overview(
         ).count() if model_ids else 0
 
         daily_stats.append({
-            "date": day.strftime("%Y-%m-%d"),
-            "day_label": day.strftime("%a"),
+            "date": day_start.strftime("%Y-%m-%d"),
+            "day_label": day_start.strftime("%a"), # Mon, Tue...
             "defective": defective_count,
             "normal": normal_count
         })
