@@ -57,6 +57,7 @@ export default function StatsPage() {
         })
 
       } catch (error: any) {
+        console.error('Failed to fetch stats:', error)
         toast.error('Failed to load data: ' + error.message)
       } finally {
         setLoading(false)
@@ -67,20 +68,80 @@ export default function StatsPage() {
   }, [timeRange])
 
   if (loading) return <div className="flex h-96 items-center justify-center"><Loader2 className="text-indigo-600 h-8 w-8 animate-spin" /></div>
-  if (!statsData) return <div className="flex h-96 items-center justify-center text-slate-500">Failed to load data</div>
+  
+  // 1. ROBUST DATA EXTRACTION
+  // Handles the structure { daily_inspections: [...] } provided in your logs
+  let dailyInspections: any[] = []
+  
+  if (statsData) {
+      if (Array.isArray(statsData)) {
+          dailyInspections = statsData
+      } else if (Array.isArray(statsData.daily_inspections)) {
+          dailyInspections = statsData.daily_inspections
+      } else if (Array.isArray(statsData.daily_stats)) {
+          dailyInspections = statsData.daily_stats
+      } else if (Array.isArray(statsData.history)) {
+          dailyInspections = statsData.history
+      } else if (Array.isArray(statsData.data)) {
+          dailyInspections = statsData.data
+      } else if (Array.isArray(statsData.results)) {
+          dailyInspections = statsData.results
+      }
+  }
 
-  const dailyInspections = statsData.daily_inspections || []
   const hasChartData = dailyInspections.length > 0
-  const totalDefective = statsData.total_images?.defective || 0
-  const totalNormal = statsData.total_images?.normal || 0
+  
+  // Handle totals - fallback to 0
+  const totalDefective = statsData?.total_images?.defective ?? statsData?.total_defective ?? 0
+  const totalNormal = statsData?.total_images?.normal ?? statsData?.total_normal ?? 0
   const totalProcessed = totalDefective + totalNormal
   const defectRate = totalProcessed > 0 ? ((totalDefective / totalProcessed) * 100).toFixed(1) : '0.0'
 
+  // Helper to safely extract numbers from multiple possible keys
+  const getCount = (item: any, keys: string[]) => {
+    for (const key of keys) {
+      if (item[key] !== undefined && item[key] !== null) {
+        return Number(item[key]);
+      }
+    }
+    return 0;
+  };
+
   const barData = {
-    labels: dailyInspections.map((d: any) => d.day_label || ''),
+    // Labels: Prioritize 'day_label' (e.g., "Sun") from your API response
+    labels: dailyInspections.map((d: any) => {
+        // Use day_label if available (matches your console log)
+        if (d.day_label) return d.day_label;
+        
+        const raw = d.date || d.day || d.label || d.created_at || 'Unknown';
+        // If it looks like a date string, format it
+        if (typeof raw === 'string' && (raw.includes('-') || raw.includes('/'))) {
+           const date = new Date(raw);
+           if (!isNaN(date.getTime())) {
+               return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+           }
+        }
+        return raw;
+    }),
     datasets: [
-      { label: 'Defective', data: dailyInspections.map((d: any) => Number(d.defective || 0)), backgroundColor: '#ef4444', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
-      { label: 'Normal', data: dailyInspections.map((d: any) => Number(d.normal || 0)), backgroundColor: '#10b981', borderRadius: 4, barPercentage: 0.6, categoryPercentage: 0.8 },
+      { 
+        label: 'Defective', 
+        // Maps 'defective' from your console log
+        data: dailyInspections.map((d: any) => getCount(d, ['defective', 'defective_count', 'defects', 'count_defective', 'failures'])),
+        backgroundColor: '#ef4444', 
+        borderRadius: 4, 
+        barPercentage: 0.6, 
+        categoryPercentage: 0.8 
+      },
+      { 
+        label: 'Normal', 
+         // Maps 'normal' from your console log
+        data: dailyInspections.map((d: any) => getCount(d, ['normal', 'normal_count', 'normals', 'count_normal', 'successes'])),
+        backgroundColor: '#10b981', 
+        borderRadius: 4, 
+        barPercentage: 0.6, 
+        categoryPercentage: 0.8 
+      },
     ],
   }
 
@@ -89,8 +150,33 @@ export default function StatsPage() {
     datasets: [{ data: [totalNormal, totalDefective], backgroundColor: ['#10b981', '#ef4444'], borderColor: ['#ffffff', '#ffffff'], borderWidth: 2 }],
   }
 
-  const barOptions: any = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e293b', padding: 8, cornerRadius: 6 } }, scales: { x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } }, border: { display: false } }, y: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b', font: { size: 10 }, precision: 0 }, border: { display: false, dash: [4, 4] } } }, interaction: { mode: 'index', intersect: false } }
-  const doughnutOptions: any = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } } }, cutout: '75%' }
+  const barOptions: any = { 
+    responsive: true, 
+    maintainAspectRatio: false, 
+    plugins: { 
+        legend: { display: true, position: 'top' }, 
+        tooltip: { backgroundColor: '#1e293b', padding: 8, cornerRadius: 6 } 
+    }, 
+    scales: { 
+        x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } }, border: { display: false } }, 
+        y: { 
+            grid: { color: '#f1f5f9' }, 
+            ticks: { color: '#64748b', font: { size: 10 }, precision: 0 }, 
+            border: { display: false, dash: [4, 4] },
+            beginAtZero: true 
+        } 
+    }, 
+    interaction: { mode: 'index', intersect: false } 
+  }
+  
+  const doughnutOptions: any = { 
+    responsive: true, 
+    maintainAspectRatio: false, 
+    plugins: { 
+        legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } } 
+    }, 
+    cutout: '75%' 
+  }
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
@@ -179,7 +265,13 @@ export default function StatsPage() {
                     <h3 className="text-sm font-bold text-gray-900">Inspection Volume</h3>
                 </div>
                 <div className="relative flex-1 w-full min-h-0">
-                    {!hasChartData ? <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-slate-400 bg-slate-50/50 rounded-lg border border-dashed border-slate-200"><p className="text-xs">No data available</p></div> : <Bar data={barData} options={barOptions} />}
+                    {!hasChartData ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-slate-400 bg-slate-50/50 rounded-lg border border-dashed border-slate-200 p-4">
+                            <p className="text-xs font-semibold">No inspection data found for this time range.</p>
+                        </div>
+                    ) : (
+                        <Bar data={barData} options={barOptions} />
+                    )}
                 </div>
             </div>
           </Card>

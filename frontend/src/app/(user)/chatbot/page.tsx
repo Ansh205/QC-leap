@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Send, Bot, User, Sparkles, Loader2, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import ReactMarkdown from 'react-markdown'
+import api from '@/lib/api'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -31,18 +32,24 @@ export default function ChatbotPage() {
     setLoading(true)
 
     try {
-      // Simulate API response
-      setTimeout(() => {
-        const botMessage: Message = { 
-            role: 'assistant', 
-            content: "I've analyzed the latest **production run**. \n\nIt looks like the defect rate has dropped by **12%** compared to last week. The most common issue remains *surface scratching* on the Q4 batch." 
-        }
-        setMessages((prev) => [...prev, botMessage])
-        setLoading(false)
-      }, 1000)
+      // UPDATED: Real API Call
+      // Assuming the backend endpoint is '/chatbot/message' and returns { content: "response string" }
+      const response: any = await api.post('/chatbot/message', { message: userMessage.content })
+      
+      const botContent = response.content || response.message || response.reply || "I received your message, but the server returned an empty response."
 
-    } catch (error) {
-      toast.error('Failed to send message')
+      const botMessage: Message = { 
+          role: 'assistant', 
+          content: botContent
+      }
+      setMessages((prev) => [...prev, botMessage])
+
+    } catch (error: any) {
+      console.error("Chatbot Error:", error)
+      toast.error(error.message || 'Failed to send message')
+      // Optional: Add an error message to the chat history so the user knows it failed
+      setMessages((prev) => [...prev, { role: 'assistant', content: "**Error:** Failed to connect to the AI service. Please try again later." }])
+    } finally {
       setLoading(false)
     }
   }

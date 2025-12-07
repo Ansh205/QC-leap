@@ -1,5 +1,5 @@
 'use client'
-// ... (imports remain the same, just update Search import)
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,14 +12,12 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { models as modelsAPI, auth } from '@/lib/api'
 
-// ... (formatDate function remains same)
 function formatDate(isoDate: string): string {
   const date = new Date(isoDate)
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 export default function ModelsPage() {
-  // ... (State logic remains same)
   const [models, setModels] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -33,11 +31,17 @@ export default function ModelsPage() {
   const [newModelIsPublic, setNewModelIsPublic] = useState(false)
   const [creating, setCreating] = useState(false)
   
+  // Store token for image loading
+  const [authToken, setAuthToken] = useState('')
+  
   const router = useRouter()
 
   useEffect(() => {
     async function init() {
       try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('qc_leap_token') : ''
+        setAuthToken(token || '')
+        
         const [user, data] = await Promise.all([auth.getCurrentUser(), modelsAPI.list()])
         setCurrentUser(user)
         setModels(data.map((m: any) => ({
@@ -67,6 +71,27 @@ export default function ModelsPage() {
     }
     return res.sort((a, b) => sortBy === 'date' ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime() : parseFloat(b.accuracy||0) - parseFloat(a.accuracy||0))
   }, [models, searchQuery, filterStatus, sortBy])
+
+  // Helper to construct secure image URL
+  const getThumbnailUrl = (model: any) => {
+    if (!model.thumbnail_url) return null;
+    
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+    let url = model.thumbnail_url;
+    
+    // Check if it's a relative path
+    if (!url.startsWith('http')) {
+        url = `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+    }
+    
+    // Append token if available
+    if (authToken) {
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}token=${authToken}`;
+    }
+    
+    return url;
+  }
 
   return (
     <div className="space-y-4">
@@ -147,10 +172,22 @@ export default function ModelsPage() {
             <Card key={model.id} className="group overflow-hidden hover:shadow-xl hover:shadow-indigo-500/10 transition-all border-white/60 bg-white/80 backdrop-blur-sm duration-300">
               <div className="relative aspect-[16/9] bg-gradient-to-br from-slate-50 to-slate-100 border-b border-slate-100/50 flex items-center justify-center group-hover:scale-[1.02] transition-transform duration-500">
                  {model.thumbnail_url ? (
-                   <img src={`${process.env.NEXT_PUBLIC_API_URL}${model.thumbnail_url}`} className="h-full w-full object-cover" />
+                   <img 
+                      src={getThumbnailUrl(model)!} 
+                      className="h-full w-full object-cover" 
+                      alt={model.name}
+                      onError={(e) => {
+                          // Fallback on error
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement?.querySelector('.fallback-icon')?.classList.remove('hidden');
+                      }}
+                   />
                  ) : (
                    <ImageIcon className="text-slate-300 h-8 w-8 opacity-50" />
                  )}
+                 {/* Fallback Icon (initially hidden if thumb exists) */}
+                 <ImageIcon className={`fallback-icon text-slate-300 h-8 w-8 opacity-50 absolute ${model.thumbnail_url ? 'hidden' : ''}`} />
+                 
                  <div className="absolute top-2 right-2">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-md ${model.is_public ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20' : 'bg-white/80 text-slate-600 border border-white/40'}`}>
                       {model.is_public ? 'Public' : 'Private'}
@@ -198,9 +235,8 @@ export default function ModelsPage() {
         </div>
       )}
 
-      {/* Create Dialog (Kept same logic, just ensure button styling) */}
+      {/* Create Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        {/* ... (Dialog content same as before) ... */}
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>Create New Model</DialogTitle>

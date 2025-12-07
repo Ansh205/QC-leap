@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,7 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Building2, User, KeyRound, AlertTriangle, Pencil, Loader2, ShieldCheck, Briefcase } from 'lucide-react'
+import { Building2, User, KeyRound, AlertTriangle, Pencil, Loader2, ShieldCheck, Briefcase, Mail } from 'lucide-react'
 import { toast } from 'sonner'
 import { auth } from '@/lib/api'
 
@@ -257,6 +258,23 @@ export default function AccountPage() {
                 <div><Label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Industry</Label><p className="text-sm font-medium text-slate-700 mt-0.5">{userData?.company?.industry}</p></div>
               </div>
               <div><Label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Description</Label><p className="text-sm font-medium text-slate-600 mt-0.5 leading-relaxed">{userData?.company?.description}</p></div>
+              
+              {/* Management Links */}
+              <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-slate-100">
+                <Link href="/invitations">
+                  <Button variant="outline" size="sm" className="h-8 text-xs bg-white hover:bg-slate-50">
+                    <Mail className="mr-2 h-3.5 w-3.5" /> Invitations
+                  </Button>
+                </Link>
+                
+                {userData?.role === 'COMPANY_ADMIN' && (
+                  <Link href="/company">
+                    <Button variant="outline" size="sm" className="h-8 text-xs bg-white hover:bg-slate-50">
+                      <Building2 className="mr-2 h-3.5 w-3.5" /> Manage Company
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
