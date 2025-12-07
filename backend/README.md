@@ -77,7 +77,13 @@ Required `.env` variables:
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/qc_leap_db
 SECRET_KEY=your-secret-key-min-32-chars
-REDIS_URL=redis://localhost:6379/0
+REDIS_URL=redis://localhost:6380/0
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+OPENAI_API_KEY=sk-proj...
+MAIL_USERNAME=dummy@gmail.com
+MAIL_PASSWORD=.... .... .... ....
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
 ```
 
 5. **Initialize database:**
