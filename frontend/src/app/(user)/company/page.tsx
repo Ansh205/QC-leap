@@ -7,42 +7,13 @@ import * as z from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { Card, CardContent } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Building2, Mail, MoreVertical, Save, Search, Shield, Trash2, UserPlus, Factory } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Building2, Mail, MoreVertical, Factory, Search, Shield, Trash2, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { auth, invitations as invitationsAPI, company as companyAPI, Invitation as InvitationType } from '@/lib/api'
 
@@ -68,30 +39,21 @@ const mapStatus = (status: string) => {
 const getStatusColor = (status: string) => {
   const displayStatus = mapStatus(status)
   switch (displayStatus) {
-    case 'Accepted':
-      return 'bg-green-100 text-green-800'
-    case 'Pending':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'Declined':
-      return 'bg-red-100 text-red-800'
+    case 'Accepted': return 'bg-green-100 text-green-800'
+    case 'Pending': return 'bg-yellow-100 text-yellow-800'
+    case 'Declined': return 'bg-red-100 text-red-800'
     case 'Expired':
-    case 'Revoked':
-      return 'bg-gray-100 text-gray-800'
-    default:
-      return 'bg-gray-100 text-gray-800'
+    case 'Revoked': return 'bg-gray-100 text-gray-800'
+    default: return 'bg-gray-100 text-gray-800'
   }
 }
 
 // Company info schema
 const companySchema = z.object({
-  companyName: z.string().min(2, {
-    message: 'Company name must be at least 2 characters.',
-  }),
+  companyName: z.string().min(2, { message: 'Company name must be at least 2 characters.' }),
   companyIndustry: z.string().optional(),
   companyDescription: z.string().optional(),
-  currentPassword: z.string().min(1, {
-    message: 'Current password is required to make changes.',
-  }),
+  currentPassword: z.string().min(1, { message: 'Current password is required to make changes.' }),
 })
 
 type CompanyFormValues = z.infer<typeof companySchema>
@@ -130,14 +92,13 @@ export default function CompanyManagementPage() {
           form.setValue('companyDescription', user.company.description || '')
         }
 
-        // Fetch invitations and members
         setLoadingInvitations(true)
         const [invitationsList, membersList] = await Promise.all([
           invitationsAPI.list(),
           companyAPI.getMembers()
         ])
-        setInvitations(invitationsList)
-        // [FIX] Double cast to avoid TS overlap error: AxiosResponse -> unknown -> any[]
+        setInvitations(invitationsList as unknown as InvitationType[])
+        // [FIX] Double cast: AxiosResponse -> unknown -> any[]
         setMembers(membersList as unknown as any[])
       } catch (error: any) {
         toast.error(error.message || 'Failed to load data')
@@ -152,29 +113,15 @@ export default function CompanyManagementPage() {
   // Company info form
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companySchema),
-    defaultValues: {
-      companyName: '',
-      companyIndustry: '',
-      companyDescription: '',
-      currentPassword: '',
-    },
+    defaultValues: { companyName: '', companyIndustry: '', companyDescription: '', currentPassword: '' },
   })
 
   const onSubmit = async (data: CompanyFormValues) => {
     setIsUpdating(true)
-
     try {
-      await companyAPI.updateCompany(
-        data.companyName,
-        data.companyIndustry || '',
-        data.companyDescription || '',
-        data.currentPassword
-      )
-
-      // Refresh user data
+      await companyAPI.updateCompany(data.companyName, data.companyIndustry || '', data.companyDescription || '', data.currentPassword)
       const user = await auth.getCurrentUser()
       setUserData(user)
-
       toast.success('Company information updated successfully.')
       form.setValue('currentPassword', '')
     } catch (error: any) {
@@ -189,17 +136,13 @@ export default function CompanyManagementPage() {
       toast.error('Please fill in all fields')
       return
     }
-
     try {
       const invitation = await invitationsAPI.create(newIdentifier, newPermission, adminPassword) as unknown as InvitationType
       setInvitations((prev) => [...prev, invitation])
-
-      // Reset form
       setNewIdentifier('')
       setAdminPassword('')
       setNewPermission('inspect_and_train')
       setIsDialogOpen(false)
-
       toast.success('Invitation sent successfully')
     } catch (error: any) {
       toast.error(error.message || 'Failed to send invitation')
@@ -236,16 +179,14 @@ export default function CompanyManagementPage() {
     }
   }
 
-  // Member management handlers
   const handleUpdatePermission = async () => {
     if (!editingMember || !editPassword) {
       toast.error('Please enter your password')
       return
     }
-
     try {
       await companyAPI.updateMemberPermission(editingMember.id, editPermission, editPassword)
-      // [FIX] Double cast to avoid TS overlap error: AxiosResponse -> unknown -> any[]
+      // [FIX] Double cast here as well
       const updatedMembers = await companyAPI.getMembers() as unknown as any[]
       setMembers(updatedMembers)
       setEditingMember(null)
@@ -262,7 +203,6 @@ export default function CompanyManagementPage() {
       toast.error('Please enter your password')
       return
     }
-
     try {
       await companyAPI.removeMember(removingMember.id, removePassword)
       setMembers((prev) => prev.filter((m) => m.id !== removingMember.id))
@@ -280,35 +220,26 @@ export default function CompanyManagementPage() {
     const matchesPermission = permissionFilter === 'All' || invitation.permission.toUpperCase() === permissionFilter.toUpperCase()
     const displayStatus = mapStatus(invitation.status)
     const matchesStatus = statusFilter === 'All' || displayStatus === statusFilter
-
     return matchesSearch && matchesPermission && matchesStatus
   })
 
   const getStatusBadgeVariant = (status: string) => {
     const displayStatus = mapStatus(status)
     switch (displayStatus) {
-      case 'Accepted':
-        return 'default'
-      case 'Pending':
-        return 'secondary'
-      case 'Declined':
-        return 'outline'
-      case 'Expired':
-        return 'destructive'
-      default:
-        return 'default'
+      case 'Accepted': return 'default'
+      case 'Pending': return 'secondary'
+      case 'Declined': return 'outline'
+      case 'Expired': return 'destructive'
+      default: return 'default'
     }
   }
 
   const getPermissionBadgeColor = (permission: UserPermission | string) => {
     const perm = permission.toUpperCase()
     switch (perm) {
-      case 'INSPECT_AND_TRAIN':
-        return 'bg-green-100 text-green-800'
-      case 'INSPECT_ONLY':
-        return 'bg-blue-100 text-blue-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+      case 'INSPECT_AND_TRAIN': return 'bg-green-100 text-green-800'
+      case 'INSPECT_ONLY': return 'bg-blue-100 text-blue-800'
+      default: return 'bg-gray-100 text-gray-800'
     }
   }
 
@@ -317,46 +248,35 @@ export default function CompanyManagementPage() {
     return perm === 'INSPECT_AND_TRAIN' ? 'Inspect & Train' : 'Inspect Only'
   }
 
-  if (loading) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">Loading...</div>
-      </div>
-    )
-  }
+  if (loading) return <div className="container mx-auto py-8 text-center">Loading...</div>
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Company Management</h1>
-        <p className="text-slate-600">Manage your company profile and team access permissions.</p>
+    <div className="container mx-auto pt-1 pb-8 space-y-3">
+      <div className="flex flex-col gap-1 border-b border-gray-100 pb-3">
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Company Management</h1>
+        <p className="text-sm text-slate-500">Manage your company profile and team access.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         {/* Company Profile Card */}
-        <Card className="md:col-span-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100">
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row items-start gap-6">
-                <div className="p-4 bg-white rounded-xl shadow-sm text-blue-600 ring-1 ring-blue-100">
-                  <Building2 size={40} />
+        <Card className="md:col-span-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100 shadow-sm">
+            <CardContent className="pt-4 pb-4 px-5">
+              <div className="flex flex-col md:flex-row items-center gap-4">
+                <div className="p-3 bg-white rounded-lg shadow-sm text-blue-600 ring-1 ring-blue-100">
+                  <Building2 size={32} />
                 </div>
-                <div className="space-y-3 flex-1">
-                  <div>
-                    <h2 className="text-2xl font-bold text-blue-900">{userData?.company?.name || 'Company Name'}</h2>
-                    <p className="text-blue-700 font-medium">{userData?.company?.industry || 'Industry Not Set'}</p>
-                  </div>
-                  <p className="text-blue-800/80 leading-relaxed max-w-3xl">
-                    {userData?.company?.description || 'No description provided. You can add a description below to help team members identify this workspace.'}
-                  </p>
+                <div className="flex-1 space-y-1 text-center md:text-left">
+                  <h2 className="text-xl font-bold text-blue-900">{userData?.company?.name || 'Company Name'}</h2>
+                  <p className="text-sm text-blue-700">{userData?.company?.industry || 'Industry Not Set'}</p>
                 </div>
-                <div className="flex gap-4 self-start md:self-center">
-                   <div className="text-center px-4 py-2 bg-white/60 rounded-lg">
-                      <p className="text-2xl font-bold text-blue-900">{members.length}</p>
-                      <p className="text-xs text-blue-700 font-medium uppercase tracking-wider">Members</p>
+                <div className="flex gap-3">
+                   <div className="text-center px-3 py-1.5 bg-white/60 rounded-md">
+                      <p className="text-lg font-bold text-blue-900">{members.length}</p>
+                      <p className="text-[10px] text-blue-700 font-bold uppercase">Members</p>
                    </div>
-                   <div className="text-center px-4 py-2 bg-white/60 rounded-lg">
-                      <p className="text-2xl font-bold text-blue-900">{invitations.filter(i => i.status === 'PENDING').length}</p>
-                      <p className="text-xs text-blue-700 font-medium uppercase tracking-wider">Pending</p>
+                   <div className="text-center px-3 py-1.5 bg-white/60 rounded-md">
+                      <p className="text-lg font-bold text-blue-900">{invitations.filter(i => i.status === 'PENDING').length}</p>
+                      <p className="text-[10px] text-blue-700 font-bold uppercase">Pending</p>
                    </div>
                 </div>
               </div>
@@ -433,359 +353,131 @@ export default function CompanyManagementPage() {
         </div>
       </div>
 
-        {/* Team Members Section */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold">Team</h2>
-              <p className="text-slate-600">Manage access and invitations</p>
-            </div>
-
+      {/* Team Section */}
+      <div className="space-y-3">
+          <div className="flex items-center justify-between pt-2">
+            <div><h2 className="text-lg font-bold">Team Members</h2></div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Invite Member
-                </Button>
+                <Button size="sm" className="h-8 bg-blue-600 hover:bg-blue-700"><UserPlus className="mr-2 h-3.5 w-3.5" /> Invite</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>Invite New Team Member</DialogTitle>
-                  <DialogDescription>
-                    Invite a new team member by providing their username or email and assigning permissions
-                  </DialogDescription>
+                  <DialogDescription>Invite a new team member by providing their username or email.</DialogDescription>
                 </DialogHeader>
-
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
                     <Label htmlFor="identifier">Username or Email</Label>
-                    <Input
-                      id="identifier"
-                      type="text"
-                      placeholder="username or user@example.com"
-                      value={newIdentifier}
-                      onChange={(e) => setNewIdentifier(e.target.value)}
-                    />
+                    <Input id="identifier" value={newIdentifier} onChange={(e) => setNewIdentifier(e.target.value)} />
                   </div>
-
                   <div className="grid gap-2">
                     <Label htmlFor="permission">Permission Level</Label>
                     <Select value={newPermission} onValueChange={(value) => setNewPermission(value as UserPermission)}>
-                      <SelectTrigger id="permission">
-                        <SelectValue />
-                      </SelectTrigger>
+                      <SelectTrigger id="permission"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="inspect_and_train">Inspect & Train - Full model access</SelectItem>
-                        <SelectItem value="inspect_only">Inspect Only - Can only run inspections</SelectItem>
+                        <SelectItem value="inspect_and_train">Inspect & Train</SelectItem>
+                        <SelectItem value="inspect_only">Inspect Only</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-
                   <div className="grid gap-2">
-                    <Label htmlFor="password">Your Password (for verification)</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                    />
-                    <p className="text-xs text-gray-500">Your password is required to send invitations</p>
+                    <Label htmlFor="password">Your Password</Label>
+                    <Input id="password" type="password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} />
                   </div>
                 </div>
-
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSendInvitation}>
-                    <Mail className="mr-2 h-4 w-4" />
-                    Send Invitation
-                  </Button>
+                  <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={handleSendInvitation}>Send Invitation</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
 
-          {/* Filters and Search */}
-          <div className="flex flex-wrap gap-4">
-            <div className="relative min-w-[250px] flex-1">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-              <Input
-                placeholder="Search by username or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-400" />
+              <Input placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-8 h-8 text-sm bg-white" />
             </div>
-
-            <Select
-              value={permissionFilter}
-              onValueChange={(value) => setPermissionFilter(value as UserPermission | 'All')}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by Permission" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Permissions</SelectItem>
-                <SelectItem value="inspect_and_train">Inspect & Train</SelectItem>
-                <SelectItem value="inspect_only">Inspect Only</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Statuses</SelectItem>
-                <SelectItem value="Pending">Pending</SelectItem>
-                <SelectItem value="Accepted">Accepted</SelectItem>
-                <SelectItem value="Declined">Declined</SelectItem>
-                <SelectItem value="Expired">Expired</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {(searchQuery || permissionFilter !== 'All' || statusFilter !== 'All') && (
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setSearchQuery('')
-                  setPermissionFilter('All')
-                  setStatusFilter('All')
-                }}
-              >
-                Clear Filters
-              </Button>
-            )}
+            <Select value={permissionFilter} onValueChange={(v) => setPermissionFilter(v as any)}><SelectTrigger className="w-[140px] h-8 text-sm"><SelectValue placeholder="Role" /></SelectTrigger><SelectContent><SelectItem value="All">All</SelectItem><SelectItem value="inspect_and_train">Inspect & Train</SelectItem><SelectItem value="inspect_only">Inspect Only</SelectItem></SelectContent></Select>
           </div>
 
-          {/* Members Table */}
-          <div className="rounded-md border bg-white overflow-hidden shadow-sm">
+          <div className="rounded-lg border bg-white overflow-hidden shadow-sm">
             <Table>
-              <TableHeader className="bg-gray-50">
-                <TableRow>
-                  <TableHead className="font-semibold text-gray-900">User</TableHead>
-                  <TableHead className="font-semibold text-gray-900">Type</TableHead>
-                  <TableHead className="font-semibold text-gray-900">Permission</TableHead>
-                  <TableHead className="font-semibold text-gray-900">Status</TableHead>
-                  <TableHead className="font-semibold text-gray-900">Date</TableHead>
-                  <TableHead className="text-right font-semibold text-gray-900">Actions</TableHead>
+              <TableHeader className="bg-gray-50/50">
+                <TableRow className="h-9">
+                  <TableHead className="font-semibold text-xs text-gray-700">User</TableHead>
+                  <TableHead className="font-semibold text-xs text-gray-700">Role</TableHead>
+                  <TableHead className="font-semibold text-xs text-gray-700">Permission</TableHead>
+                  <TableHead className="font-semibold text-xs text-gray-700">Status</TableHead>
+                  <TableHead className="text-right font-semibold text-xs text-gray-700">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* Active Members */}
                 {members.map((member) => (
-                    <TableRow key={`member-${member.id}`}>
-                      <TableCell>
-                          <div>
-                              <p className="font-medium text-gray-900">{member.username}</p>
-                              <p className="text-xs text-gray-500">{member.email}</p>
-                          </div>
-                      </TableCell>
-                      <TableCell>
-                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700">
-                             {member.role === 'COMPANY_ADMIN' ? 'Admin' : 'Member'}
-                         </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getPermissionBadgeColor(member.permission)} variant="secondary">
-                          {getPermissionLabel(member.permission)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700">
-                             <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span> Active
-                         </span>
-                      </TableCell>
-                      <TableCell><span className="text-gray-500 text-xs">-</span></TableCell>
+                    <TableRow key={`member-${member.id}`} className="h-12">
+                      <TableCell><div className="font-medium text-sm">{member.username}</div><div className="text-xs text-gray-500">{member.email}</div></TableCell>
+                      <TableCell><span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-700">{member.role === 'COMPANY_ADMIN' ? 'Admin' : 'Member'}</span></TableCell>
+                      <TableCell><Badge className={getPermissionBadgeColor(member.permission)} variant="secondary">{getPermissionLabel(member.permission)}</Badge></TableCell>
+                      <TableCell><span className="text-xs text-green-600 font-medium">Active</span></TableCell>
                       <TableCell className="text-right">
                         {member.role !== 'COMPANY_ADMIN' && member.id !== userData?.id && (
                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="h-6 w-6 p-0"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => {
-                                setEditingMember({
-                                  id: member.id,
-                                  username: member.username,
-                                  currentPermission: member.permission
-                                })
-                                setEditPermission(member.permission)
-                              }}>
-                                <Shield className="mr-2 h-4 w-4" />
-                                Change Permission
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => setRemovingMember({id: member.id, username: member.username})}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Remove Member
-                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => { setEditingMember({ id: member.id, username: member.username, currentPermission: member.permission }); setEditPermission(member.permission) }}><Shield className="mr-2 h-3.5 w-3.5" /> Change Permission</DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setRemovingMember({id: member.id, username: member.username})} className="text-red-600"><Trash2 className="mr-2 h-3.5 w-3.5" /> Remove</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
                       </TableCell>
                     </TableRow>
                 ))}
-
-                {/* Invitations */}
                 {filteredInvitations.map((invitation) => (
-                    <TableRow key={`invitation-${invitation.id}`}>
-                      <TableCell className="font-medium text-gray-600">{invitation.target_identifier}</TableCell>
-                      <TableCell><span className="text-xs text-gray-400">Invitation</span></TableCell>
-                      <TableCell>
-                        <Badge className={getPermissionBadgeColor(invitation.permission as UserPermission)} variant="secondary">
-                          {getPermissionLabel(invitation.permission as UserPermission)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(invitation.status)} variant="secondary">
-                          {mapStatus(invitation.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-gray-500 text-xs">{new Date(invitation.created_at).toLocaleDateString()}</TableCell>
+                    <TableRow key={`invitation-${invitation.id}`} className="h-12">
+                      <TableCell><div className="font-medium text-sm text-gray-600">{invitation.target_identifier}</div><div className="text-xs text-gray-400">Invitation</div></TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell><Badge className={getPermissionBadgeColor(invitation.permission as UserPermission)} variant="secondary">{getPermissionLabel(invitation.permission as UserPermission)}</Badge></TableCell>
+                      <TableCell><Badge className={getStatusColor(invitation.status)} variant="secondary">{mapStatus(invitation.status)}</Badge></TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" size="sm" className="h-6 w-6 p-0"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {invitation.status === 'pending' && (
-                              <>
-                                <DropdownMenuItem onClick={() => handleResendInvitation(invitation.id)}>
-                                  <Mail className="mr-2 h-4 w-4" />
-                                  Resend Invitation
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleRevokeInvitation(invitation.id)}>
-                                  Revoke Invitation
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteInvitation(invitation.id)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
+                            {invitation.status === 'pending' && <><DropdownMenuItem onClick={() => handleResendInvitation(invitation.id)}><Mail className="mr-2 h-3.5 w-3.5" /> Resend</DropdownMenuItem><DropdownMenuItem onClick={() => handleRevokeInvitation(invitation.id)}>Revoke</DropdownMenuItem></>}
+                            <DropdownMenuItem onClick={() => handleDeleteInvitation(invitation.id)} className="text-red-600"><Trash2 className="mr-2 h-3.5 w-3.5" /> Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
                   ))}
-                  
-                  {members.length === 0 && filteredInvitations.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center text-gray-500">
-                          No members or invitations found matching your criteria.
-                        </TableCell>
-                      </TableRow>
-                  )}
               </TableBody>
             </Table>
           </div>
-        </div>
+      </div>
 
-        {/* Update Permission Dialog */}
-        <Dialog open={!!editingMember} onOpenChange={(open) => !open && setEditingMember(null)}>
+      {/* Permission Dialog */}
+      <Dialog open={!!editingMember} onOpenChange={(open) => !open && setEditingMember(null)}>
           <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Change Member Permission</DialogTitle>
-              <DialogDescription>
-                Update permission level for <span className="font-semibold">{editingMember?.username}</span>
-              </DialogDescription>
-            </DialogHeader>
-
+            <DialogHeader><DialogTitle>Change Permission</DialogTitle></DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-permission">Permission Level</Label>
-                <Select value={editPermission} onValueChange={setEditPermission}>
-                  <SelectTrigger id="edit-permission">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="INSPECT_AND_TRAIN">Inspect & Train - Full model access</SelectItem>
-                    <SelectItem value="INSPECT_ONLY">Inspect Only - Can only run inspections</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="edit-password">Your Password (for verification)</Label>
-                <Input
-                  id="edit-password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={editPassword}
-                  onChange={(e) => setEditPassword(e.target.value)}
-                />
-                <p className="text-xs text-gray-500">Your password is required to change permissions</p>
-              </div>
+              <Select value={editPermission} onValueChange={setEditPermission}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="INSPECT_AND_TRAIN">Inspect & Train</SelectItem><SelectItem value="INSPECT_ONLY">Inspect Only</SelectItem></SelectContent>
+              </Select>
+              <Input type="password" placeholder="Password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} />
             </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setEditingMember(null)
-                setEditPassword('')
-              }}>
-                Cancel
-              </Button>
-              <Button onClick={handleUpdatePermission}>
-                <Shield className="mr-2 h-4 w-4" />
-                Update Permission
-              </Button>
-            </DialogFooter>
+            <DialogFooter><Button onClick={handleUpdatePermission}>Update</Button></DialogFooter>
           </DialogContent>
-        </Dialog>
+      </Dialog>
 
-        {/* Remove Member Dialog */}
-        <Dialog open={!!removingMember} onOpenChange={(open) => !open && setRemovingMember(null)}>
+      {/* Remove Dialog */}
+      <Dialog open={!!removingMember} onOpenChange={(open) => !open && setRemovingMember(null)}>
           <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Remove Team Member</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to remove <span className="font-semibold">{removingMember?.username}</span> from the company? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="remove-password">Your Password (for verification)</Label>
-                <Input
-                  id="remove-password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={removePassword}
-                  onChange={(e) => setRemovePassword(e.target.value)}
-                />
-                <p className="text-xs text-gray-500">Your password is required to remove members</p>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setRemovingMember(null)
-                setRemovePassword('')
-              }}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={handleRemoveMember}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Remove Member
-              </Button>
-            </DialogFooter>
+            <DialogHeader><DialogTitle>Remove Member</DialogTitle></DialogHeader>
+            <div className="py-4"><Input type="password" placeholder="Password" value={removePassword} onChange={(e) => setRemovePassword(e.target.value)} /></div>
+            <DialogFooter><Button variant="destructive" onClick={handleRemoveMember}>Remove</Button></DialogFooter>
           </DialogContent>
-        </Dialog>
+      </Dialog>
     </div>
   )
 }

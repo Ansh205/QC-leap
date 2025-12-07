@@ -771,7 +771,7 @@ export default function SampleImages({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 pt-4 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid lg:grid-cols-6 grid-cols-2 gap-4 pt-4 md:grid-cols-4 lg:grid-cols-5">
         {filteredImages.map((image) => (
           <ImageCard
             key={image.id}
