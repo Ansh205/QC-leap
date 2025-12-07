@@ -12,7 +12,8 @@ from app.models.training_job import TrainingJob
 from app.schemas.inspection_model import (
     InspectionModelCreate,
     InspectionModelUpdate,
-    InspectionModelResponse
+    InspectionModelResponse,
+    DeleteInspectionModel
 )
 from app.services.inspection_model_service import inspection_model_service
 
@@ -302,6 +303,7 @@ def get_model_statistics(
 @router.delete("/{model_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_inspection_model(
     model_id: int,
+    delete_in: DeleteInspectionModel,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -318,6 +320,14 @@ def delete_inspection_model(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
+        )
+
+    # Verify password
+    from app.core.security import verify_password
+    if not verify_password(delete_in.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect password"
         )
 
     inspection_model_service.delete(db=db, model_id=model_id)

@@ -535,14 +535,20 @@ export default function SampleImages({
   }
 
   const uploadAndAnnotate = async (
-    file: File,
-    rect: { x: number; y: number; width: number; height: number }
+    file: File | undefined,
+    rect: { x: number; y: number; width: number; height: number },
+    isUpdate = false,
+    existingImageId?: string
   ) => {
-    // 1. Upload Image
-    const uploaded = await imagesAPI.upload(modelId, [file], 'defective')
-    const imageId = uploaded[0].id
+    let imageId = existingImageId ? parseInt(existingImageId) : 0
 
-    // 2. Create Annotation
+    if (!isUpdate && file) {
+      // 1. Upload Image
+      const uploaded = await imagesAPI.upload(modelId, [file], 'defective')
+      imageId = uploaded[0].id
+    }
+
+    // 2. Create/Update Annotation
     // Ensure rect has positive width/height
     const x = Math.min(rect.x, rect.x + rect.width)
     const y = Math.min(rect.y, rect.y + rect.height)
@@ -565,7 +571,11 @@ export default function SampleImages({
       ],
     }
 
-    await annotationsAPI.createManual(imageId, 'defect', canvasData)
+    if (isUpdate && imageId) {
+      await annotationsAPI.updateManual(imageId, 'defect', canvasData)
+    } else {
+      await annotationsAPI.createManual(imageId, 'defect', canvasData)
+    }
   }
 
   const handleSaveDefect = async () => {
@@ -575,28 +585,40 @@ export default function SampleImages({
       setLoading(true)
 
       if (editingImageId) {
-        // Update existing annotation (not fully implemented in backend yet, so maybe just re-create?)
-        // For now, let's assume we can just update local state or re-upload if needed.
-        // But since we can't easily update the image file, we might just update the annotation.
-        // TODO: Implement annotation update logic
-        alert('Update not fully implemented yet')
+        // Update existing annotation used by backend PUT
+        await uploadAndAnnotate(null as any, currentRect, true, editingImageId)
+
+        setIsDialogOpen(false)
+        setEditingImageId(null)
+        setImageLoaded(false)
+        resetViewport()
+        fetchImages()
+        if (onModelUpdate) onModelUpdate()
       } else {
         const currentPending = pendingImages[currentImageIndex]
         await uploadAndAnnotate(currentPending.file, currentRect)
 
+        // Refresh grid immediately
+        fetchImages()
+        if (onModelUpdate) onModelUpdate()
+
         if (currentImageIndex < pendingImages.length - 1) {
           setCurrentImageIndex((prev) => prev + 1)
           setCurrentRect({ x: 0, y: 0, width: 0, height: 0 })
+          // Don't clear image loaded immediately to avoid flicker if next image loads fast
+          // But here we switch source, so we should.
           setImageLoaded(false)
           resetViewport()
         } else {
+          // Last image processed
           setIsDialogOpen(false)
-          setPendingImages([])
-          setCurrentImageIndex(0)
-          setImageLoaded(false)
-          resetViewport()
-          fetchImages()
-          if (onModelUpdate) onModelUpdate()
+          // Small delay before clearing to allow dialog close animation
+          setTimeout(() => {
+            setPendingImages([])
+            setCurrentImageIndex(0)
+            setImageLoaded(false)
+            resetViewport()
+          }, 300)
         }
       }
     } catch (err) {
@@ -624,6 +646,10 @@ export default function SampleImages({
 
       await uploadAndAnnotate(currentPending.file, fullRect)
 
+      // Refresh grid immediately
+      fetchImages()
+      if (onModelUpdate) onModelUpdate()
+
       if (currentImageIndex < pendingImages.length - 1) {
         setCurrentImageIndex((prev) => prev + 1)
         setCurrentRect({ x: 0, y: 0, width: 0, height: 0 })
@@ -635,8 +661,6 @@ export default function SampleImages({
         setCurrentImageIndex(0)
         setImageLoaded(false)
         resetViewport()
-        fetchImages()
-        if (onModelUpdate) onModelUpdate()
       }
     } catch (err) {
       console.error('Failed to skip (save full) image', err)
@@ -691,7 +715,7 @@ export default function SampleImages({
     const newPending = [...pendingImages]
     newPending.splice(currentImageIndex, 1)
     setPendingImages(newPending)
-    
+
     // If we deleted the last one
     if (newPending.length === 0) {
       setIsDialogOpen(false)
@@ -700,12 +724,12 @@ export default function SampleImages({
       setImageLoaded(false)
       resetViewport()
     } else {
-       // Adjust index if needed
-       if (currentImageIndex >= newPending.length) {
-         setCurrentImageIndex(newPending.length - 1)
-       }
-       setImageLoaded(false)
-       resetViewport()
+      // Adjust index if needed
+      if (currentImageIndex >= newPending.length) {
+        setCurrentImageIndex(newPending.length - 1)
+      }
+      setImageLoaded(false)
+      resetViewport()
     }
   }
 
@@ -731,7 +755,7 @@ export default function SampleImages({
 
   return (
     <div>
-      <div className="mb-6 flex justify-between space-x-2">
+      <div className="mb-6 flex items-center justify-between space-x-2">
         <div className="flex rounded-lg border">
           <button
             onClick={() => setActiveTab('defective')}
@@ -753,7 +777,7 @@ export default function SampleImages({
 
         <Button
           size={'lg'}
-          className="-mt-3 w-36 bg-gray-800 text-white hover:bg-gray-700"
+          className="mt-0 w-36 bg-gray-800 text-white hover:bg-gray-700"
           onClick={handleUploadClick}
           disabled={loading}
         >
@@ -771,7 +795,7 @@ export default function SampleImages({
         />
       </div>
 
-      <div className="grid lg:grid-cols-6 grid-cols-2 gap-4 pt-4 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 pt-4 md:grid-cols-4 lg:grid-cols-5 lg:grid-cols-6">
         {filteredImages.map((image) => (
           <ImageCard
             key={image.id}
@@ -783,7 +807,7 @@ export default function SampleImages({
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={(open) => !loading && setIsDialogOpen(open)}>
-        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+        <DialogContent className="max-h-[95vh] max-w-5xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingImageId
@@ -838,17 +862,17 @@ export default function SampleImages({
             zoom.
           </p>
 
-          <DialogFooter className="gap-2 sm:justify-between sticky bottom-0 bg-white pt-2 border-t mt-4 z-10">
+          <DialogFooter className="sticky bottom-0 z-10 mt-4 gap-2 border-t bg-white pt-2 sm:justify-between">
             {!editingImageId && (
-              <div className="flex w-full items-center justify-between flex-wrap gap-2">
+              <div className="flex w-full flex-wrap items-center justify-between gap-2">
                 <div className="flex gap-2">
                   <Button variant="destructive" onClick={handleSkipAll} disabled={loading}>
                     {loading ? 'Processing...' : 'Skip All'}
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="text-red-500 hover:bg-red-50 hover:text-red-700" 
-                    onClick={handleDeletePending} 
+                  <Button
+                    variant="ghost"
+                    className="text-red-500 hover:bg-red-50 hover:text-red-700"
+                    onClick={handleDeletePending}
                     disabled={loading}
                   >
                     <Trash2 size={16} className="mr-2" /> Delete
@@ -860,7 +884,9 @@ export default function SampleImages({
                   </Button>
                   <Button
                     onClick={handleSaveDefect}
-                    disabled={(currentRect.width === 0 && !editingImageId) || !imageLoaded || loading}
+                    disabled={
+                      (currentRect.width === 0 && !editingImageId) || !imageLoaded || loading
+                    }
                   >
                     {loading ? 'Saving...' : 'Save & Continue'}
                   </Button>
@@ -872,10 +898,7 @@ export default function SampleImages({
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={loading}>
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleSaveDefect}
-                  disabled={!imageLoaded || loading}
-                >
+                <Button onClick={handleSaveDefect} disabled={!imageLoaded || loading}>
                   {loading ? 'Saving...' : 'Update'}
                 </Button>
               </div>

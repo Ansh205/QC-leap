@@ -116,14 +116,10 @@ export default function NotificationBell() {
         onClick={() => setIsOpen(!isOpen)}
         className="relative rounded-full p-2 transition-colors hover:bg-gray-100"
       >
-        {unreadCount > 0 ? (
-          <BellDot className="h-6 w-6 text-yellow-500" />
-        ) : (
-          <Bell className="h-6 w-6" />
-        )}
+        <Bell className="h-6 w-6 text-gray-700" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex translate-x-1/2 -translate-y-1/2 transform items-center justify-center rounded-full bg-red-600 px-2 py-1 text-xs leading-none font-bold text-white">
-            {unreadCount > 99 ? '99+' : unreadCount}
+          <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+            {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>

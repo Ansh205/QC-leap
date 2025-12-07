@@ -76,5 +76,35 @@ class UserService:
             return None
         return user
 
+    @staticmethod
+    def update(db: Session, user: User, user_in, current_password: str) -> User:
+        """Update user profile"""
+        # Verify password
+        if not verify_password(current_password, user.hashed_password):
+            return None
+
+        update_data = user_in.model_dump(exclude_unset=True, exclude={'current_password'})
+        for field, value in update_data.items():
+            setattr(user, field, value)
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+
+    @staticmethod
+    def delete(db: Session, user: User, current_password: str) -> bool:
+        """Delete user account"""
+        # Verify password
+        if not verify_password(current_password, user.hashed_password):
+            return False
+
+        # If user is owner of a model, delete the model or handle it (cascade usually handles it)
+        # But we might want to be explicit or soft delete.
+        # For now, hard delete.
+        db.delete(user)
+        db.commit()
+        return True
+
 
 user_service = UserService()

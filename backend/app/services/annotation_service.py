@@ -144,6 +144,74 @@ class AnnotationService:
         db.refresh(annotation)
         return annotation
 
+    def update_manual_annotation(
+        self,
+        db: Session,
+        annotation_id: int,
+        annotation_in: ManualAnnotationCreate,
+        upload_dir: str
+    ) -> Annotation:
+        """
+        Update manual annotation.
+        Regenerates mask and updates record.
+        """
+        annotation = db.query(Annotation).filter(Annotation.id == annotation_id).first()
+        if not annotation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Annotation not found"
+            )
+
+        # Retrieve image to get paths
+        image = db.query(Image).filter(Image.id == annotation.image_id).first()
+        if not image:
+             raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Associated image not found"
+            )
+        
+        # Regenerate Mask
+        from app.utils.image_processing import generate_mask_from_polygons
+        
+        # Re-use logic for path determination
+        mask_filename = f"{os.path.splitext(image.filename)[0]}_mask.png"
+        model_id = image.inspection_model_id
+        model = image.inspection_model
+        user_id_str = str(model.owner_id)
+        mask_dir = os.path.join(upload_dir, user_id_str, str(model_id), 'masks')
+        os.makedirs(mask_dir, exist_ok=True)
+        mask_path = os.path.join(mask_dir, mask_filename)
+
+        canvas_data = annotation_in.canvas_data
+        polygons_data = [
+            {'points': [(p[0], p[1]) for p in polygon.points], 'label': polygon.label}
+            for polygon in canvas_data.polygons
+        ]
+
+        try:
+            generate_mask_from_polygons(
+                image_width=canvas_data.image_width,
+                image_height=canvas_data.image_height,
+                polygons=polygons_data,
+                output_path=mask_path
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to regenerate mask: {str(e)}"
+            )
+
+        # Update Annotation Record
+        annotation.defect_labels = annotation_in.defect_labels
+        # partition mask_path is likely same, but just in case
+        annotation.mask_path = mask_path 
+        annotation.canvas_data = canvas_data.model_dump_json()
+        annotation.notes = annotation_in.notes
+        
+        db.commit()
+        db.refresh(annotation)
+        return annotation
+
     def get_by_image_id(self, db: Session, image_id: int) -> Optional[Annotation]:
         """Get annotation for an image"""
         return db.query(Annotation).filter(Annotation.image_id == image_id).first()

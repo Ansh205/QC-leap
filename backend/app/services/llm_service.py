@@ -454,6 +454,13 @@ def chat(request: ChatRequest, db=None, user=None):
     "- Suggest related topics you can help with\n"
     "- Recommend contacting QC Leap support for specialized assistance\n\n"
 
+    "## Formatting Guidelines\n"
+    "- Use markdown for text formatting (bold, italic, lists)\n"
+    "- IMPORTANT: Format ALL mathematical equations using LaTeX syntax.\n"
+    "- Enclose inline equations in single dollar signs, e.g., $E=mc^2$\n"
+    "- Enclose block equations in double dollar signs, e.g., $$x = \\frac{{-b \\pm \\sqrt{{b^2 - 4ac}}}}{{2a}}$$\n"
+    "- Do NOT use \\[ ... \\] or \\( ... \\)\n\n"
+
     "Always maintain a professional, helpful tone that builds user confidence in the platform."
     )
 

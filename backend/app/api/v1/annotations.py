@@ -61,6 +61,59 @@ def create_manual_annotation(
     return annotation
 
 
+@router.put("/manual/{image_id}", response_model=AnnotationResponse)
+def update_manual_annotation(
+    image_id: int,
+    annotation_in: ManualAnnotationCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    Update manual annotation for an image.
+    Regenerates segmentation mask from new canvas polygons.
+    """
+    # Check if image exists
+    image = db.query(Image).filter(Image.id == image_id).first()
+    if not image:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Image not found"
+        )
+
+    # Check ownership
+    model = image.inspection_model
+    if model.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to edit this annotation"
+        )
+
+    # Find existing annotation
+    existing_annotation = annotation_service.get_by_image_id(db, image_id)
+    if not existing_annotation:
+        # Create if not exists (fallback)
+        return annotation_service.create_manual_annotation(
+            db=db,
+            annotation_in=annotation_in,
+            user_id=current_user.id,
+            upload_dir=UPLOAD_DIR
+        )
+
+    # For update, we want to regenerate the mask, similar to create
+    # So we reuse the logic. Since the service update method is generic,
+    # let's modify the service or do the work here.
+    # Actually, simpler to delete old and create new to ensure consistency of mask generation
+    # OR better: Add update_manual_annotation to service.
+    
+    # Let's add update_manual_annotation to service for cleaner code
+    return annotation_service.update_manual_annotation(
+        db=db,
+        annotation_id=existing_annotation.id,
+        annotation_in=annotation_in,
+        upload_dir=UPLOAD_DIR
+    )
+
+
 @router.post("/upload-csv/{model_id}", response_model=List[AnnotationResponse])
 async def upload_annotation_csv(
     model_id: int,

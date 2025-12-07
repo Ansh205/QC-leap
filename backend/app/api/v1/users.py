@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_current_active_user
 from app.database import get_db
 from app.models.user import User
-from app.schemas.user import UserResponse
+from app.schemas.user import UserResponse, UserUpdate, DeleteAccount
 
 router = APIRouter()
 
@@ -38,3 +38,39 @@ def read_user(
         )
 
     return user
+
+
+@router.put("/me", response_model=UserResponse)
+def update_user_me(
+    user_in: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Update current user profile"""
+    from app.services.user_service import user_service
+
+    user = user_service.update(db, user=current_user, user_in=user_in, current_password=user_in.current_password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect password or update failed"
+        )
+    return user
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user_me(
+    delete_in: DeleteAccount,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Delete current user account"""
+    from app.services.user_service import user_service
+
+    success = user_service.delete(db, user=current_user, current_password=delete_in.current_password)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect password"
+        )
+    return None

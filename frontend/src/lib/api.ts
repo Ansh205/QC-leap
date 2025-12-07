@@ -178,6 +178,13 @@ export const auth = {
   getCurrentUser: async (): Promise<User> => {
     return api.get('/users/me')
   },
+  updateProfile: async (data: any) => {
+    return api.put('/users/me', data)
+  },
+  deleteAccount: async (currentPassword: string) => {
+    // Axios delete with body
+    return api.delete('/users/me', { data: { current_password: currentPassword } })
+  },
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('qc_leap_token')
@@ -198,8 +205,8 @@ export const models = {
   update: async (id: number, data: Partial<Model>) => {
     return api.put(`/models/${id}`, data)
   },
-  delete: async (id: number) => {
-    return api.delete(`/models/${id}`)
+  delete: async (id: number, currentPassword: string) => {
+    return api.delete(`/models/${id}`, { data: { current_password: currentPassword } })
   },
   startTraining: async (id: number) => {
     return api.post(`/models/${id}/start-training`)
@@ -296,6 +303,14 @@ export const annotations = {
       notes,
     })
   },
+  updateManual: async (imageId: number, defectLabels: string, canvasData: any, notes?: string) => {
+    return api.put(`/annotations/manual/${imageId}`, {
+      image_id: imageId,
+      defect_labels: defectLabels,
+      canvas_data: canvasData,
+      notes,
+    })
+  },
 }
 
 export const stats = {
@@ -373,6 +388,18 @@ export const notifications = {
   },
   markAllAsRead: async () => {
     return api.post('/notifications/read-all')
+  },
+}
+
+export const chatbot = {
+  chat: async (message: string, context: string = 'general') => {
+    // Generate or retrieve a session ID
+    let sessionId = localStorage.getItem('chatbot_session_id')
+    if (!sessionId) {
+      sessionId = 'sess_' + Math.random().toString(36).substr(2, 9)
+      localStorage.setItem('chatbot_session_id', sessionId)
+    }
+    return api.post('/chatbot/chat', { session_id: sessionId, message, context })
   },
 }
 

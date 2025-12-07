@@ -46,3 +46,16 @@ class UserResponse(UserBase):
 class User(UserResponse):
     """Full user schema with all fields"""
     pass
+
+
+class UserUpdate(BaseModel):
+    """Schema for updating user profile"""
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+    current_password: str = Field(..., description="Required to authorize changes")
+
+
+class DeleteAccount(BaseModel):
+    """Schema for deleting account"""
+    current_password: str = Field(..., description="Required to authorize deletion")

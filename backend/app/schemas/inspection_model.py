@@ -51,3 +51,7 @@ class InspectionModel(InspectionModelResponse):
     """Full inspection model schema"""
     gan_model_path: Optional[str] = None
     vit_model_path: Optional[str] = None
+
+
+class DeleteInspectionModel(BaseModel):
+    current_password: str
