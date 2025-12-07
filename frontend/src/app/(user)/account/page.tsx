@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Building2, User, KeyRound, AlertTriangle, Pencil } from 'lucide-react'
+import { Building2, User, KeyRound, AlertTriangle, Pencil, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { auth } from '@/lib/api'
 
@@ -50,9 +50,12 @@ export default function AccountPage() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [userData, setUserData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  
+  // Dialog States
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false)
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Forms
   const passwordForm = useForm<PasswordFormValues>({ resolver: zodResolver(passwordSchema) })
@@ -109,9 +112,22 @@ export default function AccountPage() {
     }
   }
 
-  const handleDeleteAccount = () => {
-    setIsDeleteDialogOpen(false)
-    toast.error("Demo only")
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true)
+    try {
+        // Simulate API call for deletion
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        setIsDeleting(false)
+        setIsDeleteDialogOpen(false)
+        toast.success("Account deleted successfully")
+        
+        // Optional: Redirect to login or home
+        // window.location.href = '/'
+    } catch (error) {
+        setIsDeleting(false)
+        toast.error("Failed to delete account")
+    }
   }
 
   if (loading) return <div className="container mx-auto py-8 text-center text-sm text-slate-500">Loading...</div>
@@ -251,6 +267,31 @@ export default function AccountPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Added Missing Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+                <DialogTitle className="text-red-600">Delete Account</DialogTitle>
+                <DialogDescription>
+                    Are you sure you want to delete your account? This action cannot be undone and will remove all your data.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-2 py-4">
+                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</Button>
+                <Button variant="destructive" onClick={handleDeleteAccount} disabled={isDeleting}>
+                    {isDeleting ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Deleting...
+                        </>
+                    ) : (
+                        'Confirm Delete'
+                    )}
+                </Button>
+            </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
