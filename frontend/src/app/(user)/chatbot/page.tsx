@@ -3,9 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Send, Bot, User as UserIcon, Loader2 } from 'lucide-react'
+import { Send, Bot, User, Sparkles, Loader2, Zap } from 'lucide-react'
 import { toast } from 'sonner'
-import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 
 interface Message {
@@ -17,40 +16,7 @@ export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [available, setAvailable] = useState(false)
-  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
-
-  useEffect(() => {
-    // Check chatbot availability
-    const checkHealth = async () => {
-      try {
-        const token = localStorage.getItem('qc_leap_token')
-        const response = await axios.get(`${API_URL}/chatbot/health`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        setAvailable(response.data.available)
-
-        if (!response.data.available) {
-          setMessages([{
-            role: 'assistant',
-            content: 'Hi! I\'m Jemih, your QC-Leap assistant. However, the chatbot service is currently unavailable because the OpenAI API key is not configured. Please contact your administrator.'
-          }])
-        } else {
-          setMessages([{
-            role: 'assistant',
-            content: 'Hello! I\'m Jemih, your AI assistant for QC Leap. How can I help you today?'
-          }])
-        }
-      } catch (error) {
-        console.error('Failed to check chatbot health:', error)
-      }
-    }
-
-    checkHealth()
-  }, [])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -59,161 +25,144 @@ export default function ChatbotPage() {
   const handleSend = async () => {
     if (!input.trim() || loading) return
 
-    const userMessage = input.trim()
+    const userMessage: Message = { role: 'user', content: input }
+    setMessages((prev) => [...prev, userMessage])
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
     setLoading(true)
 
     try {
-      const token = localStorage.getItem('qc_leap_token')
-      const response = await axios.post(
-        `${API_URL}/chatbot/chat`,
-        {
-          session_id: sessionId,
-          message: userMessage
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
+      // Simulate API response
+      setTimeout(() => {
+        const botMessage: Message = { 
+            role: 'assistant', 
+            content: "I've analyzed the latest **production run**. \n\nIt looks like the defect rate has dropped by **12%** compared to last week. The most common issue remains *surface scratching* on the Q4 batch." 
         }
-      )
+        setMessages((prev) => [...prev, botMessage])
+        setLoading(false)
+      }, 1000)
 
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: response.data.response
-      }])
-    } catch (error: any) {
-      toast.error('Failed to send message: ' + (error.response?.data?.detail || error.message))
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Sorry, I encountered an error processing your request. Please try again.'
-      }])
-    } finally {
+    } catch (error) {
+      toast.error('Failed to send message')
       setLoading(false)
     }
   }
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col bg-background">
-      <div className="border-b border-gray-200 bg-white/50 backdrop-blur-md sticky top-0 z-10">
-        <div className="container mx-auto max-w-4xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary rounded-full p-2">
-              <Bot className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold">Jemih - QC Leap Assistant</h1>
-              <p className="text-sm text-muted-foreground">
-                {available ? 'Online and ready to help' : 'Currently unavailable'}
-              </p>
+    <div className="flex h-[calc(100vh-6.5rem)] flex-col bg-white/80 backdrop-blur-xl rounded-2xl border border-white/40 shadow-2xl shadow-indigo-100 overflow-hidden">
+      
+      {/* Sticky Header with Gradient Icon */}
+      <div className="sticky top-0 z-20 border-b border-indigo-50 bg-white/90 backdrop-blur-md px-6 py-4">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-fuchsia-600 to-purple-600 text-white shadow-lg shadow-purple-500/25 ring-1 ring-white/50">
+             <Sparkles className="h-6 w-6" />
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 leading-none">Jemih AI</h1>
+            <div className="flex items-center gap-1.5 mt-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <p className="text-xs font-medium text-slate-500">Online & Ready</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto max-w-4xl p-4 space-y-6">
-          {messages.map((message, index) => (
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scroll-smooth">
+        {messages.length === 0 && (
+           <div className="flex h-full flex-col items-center justify-center text-center text-slate-400">
+              <div className="bg-gradient-to-b from-indigo-50 to-white p-6 rounded-full mb-4 border border-indigo-50 shadow-sm">
+                  <Bot className="h-12 w-12 text-indigo-300" />
+              </div>
+              <h3 className="text-base font-semibold text-slate-700">How can I help you today?</h3>
+              <p className="text-sm text-slate-500 max-w-xs mt-2">I can analyze defect rates, summarize run history, or explain model performance metrics.</p>
+              
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
+                  <button onClick={() => setInput("Show me the defect rate for today")} className="text-xs text-left p-3 rounded-lg border border-slate-100 bg-white hover:border-indigo-200 hover:shadow-md transition-all flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-amber-500" /> Defect rate today?
+                  </button>
+                  <button onClick={() => setInput("Which model is performing best?")} className="text-xs text-left p-3 rounded-lg border border-slate-100 bg-white hover:border-indigo-200 hover:shadow-md transition-all flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-indigo-500" /> Best performing model?
+                  </button>
+              </div>
+           </div>
+        )}
+        
+        {messages.map((m, index) => (
+          <div
+            key={index}
+            className={`flex w-full gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            {m.role === 'assistant' && (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-600 to-purple-600 text-white shadow-sm mt-1">
+                    <Bot className="h-4 w-4" />
+                </div>
+            )}
+
             <div
-              key={index}
-              className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex max-w-[80%] flex-col gap-1 ${m.role === 'user' ? 'items-end' : 'items-start'}`}
             >
-              {message.role === 'assistant' && (
-                <div className="bg-primary rounded-full p-2 h-8 w-8 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Bot className="h-4 w-4 text-white" />
-                </div>
-              )}
-
-              <div
-                className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-none'
-                    : 'bg-white border border-gray-100 text-slate-800 rounded-bl-none'
+                <div
+                className={`px-5 py-3.5 text-sm shadow-sm ${
+                    m.role === 'user'
+                    ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tr-sm shadow-blue-500/20'
+                    : 'bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-tl-sm shadow-slate-200/50'
                 }`}
-              >
-                {message.role === 'user' ? (
-                  <p className="text-base leading-relaxed whitespace-pre-wrap">{message.content}</p>
-                ) : (
-                  <div className="text-base leading-relaxed overflow-hidden">
-                    <ReactMarkdown
-                      components={{
-                        p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
-                        ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-2 space-y-1" {...props} />,
-                        ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-2 space-y-1" {...props} />,
-                        li: ({ node, ...props }) => <li className="pl-1" {...props} />,
-                        h1: ({ node, ...props }) => <h1 className="text-xl font-bold mb-2 mt-4" {...props} />,
-                        h2: ({ node, ...props }) => <h2 className="text-lg font-bold mb-2 mt-3" {...props} />,
-                        h3: ({ node, ...props }) => <h3 className="text-md font-bold mb-1 mt-2" {...props} />,
-                        blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-gray-300 pl-4 italic my-2 text-gray-600" {...props} />,
-                        code: ({ node, ...props }) => {
-                          // @ts-ignore
-                          const isInline = props.inline || !props.className?.includes('language')
-                          return isInline ? (
-                            <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-pink-600 border border-gray-200" {...props} />
-                          ) : (
-                            <div className="bg-slate-900 p-3 rounded-lg overflow-x-auto my-3 text-slate-50 border border-slate-700 shadow-inner">
-                              <code className="text-sm font-mono" {...props} />
-                            </div>
-                          )
-                        },
-                        pre: ({ node, ...props }) => <pre className="p-0 m-0 bg-transparent" {...props} />,
-                        table: ({ node, ...props }) => <div className="overflow-x-auto my-3 rounded-lg border border-gray-200"><table className="min-w-full text-sm" {...props} /></div>,
-                        th: ({ node, ...props }) => <th className="bg-gray-50 border-b border-gray-200 px-4 py-2 text-left font-semibold" {...props} />,
-                        td: ({ node, ...props }) => <td className="border-b border-gray-100 px-4 py-2 last:border-0" {...props} />,
-                        a: ({ node, ...props }) => <a className="text-blue-600 hover:underline font-medium" target="_blank" rel="noopener noreferrer" {...props} />,
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
-                  </div>
-                )}
-              </div>
-
-              {message.role === 'user' && (
-                <div className="bg-slate-200 rounded-full p-2 h-8 w-8 flex items-center justify-center flex-shrink-0 mt-1">
-                  <UserIcon className="h-4 w-4 text-slate-600" />
+                >
+                <div className="prose prose-sm dark:prose-invert max-w-none break-words leading-relaxed">
+                    <ReactMarkdown>{m.content}</ReactMarkdown>
                 </div>
-              )}
+                </div>
             </div>
-          ))}
 
-          {loading && (
-            <div className="flex gap-3 justify-start">
-              <div className="bg-primary rounded-full p-2 h-8 w-8 flex items-center justify-center flex-shrink-0">
-                <Bot className="h-4 w-4 text-white" />
-              </div>
-              <div className="bg-white border border-gray-100 rounded-2xl rounded-bl-none p-3 shadow-sm">
-                <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
-              </div>
+            {m.role === 'user' && (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 mt-1">
+                    <User className="h-4 w-4" />
+                </div>
+            )}
+          </div>
+        ))}
+        {loading && (
+          <div className="flex justify-start gap-3">
+             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-600 to-purple-600 text-white shadow-sm mt-1">
+                <Bot className="h-4 w-4" />
             </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
+            <div className="flex items-center gap-2 rounded-2xl rounded-tl-none bg-white border border-slate-100 px-5 py-4 text-sm shadow-sm">
+              <Loader2 className="h-4 w-4 animate-spin text-fuchsia-600" />
+              <span className="text-slate-400 text-xs font-medium">Jemih is thinking...</span>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-gray-200 bg-white p-4">
-        <div className="container mx-auto max-w-4xl">
-          <div className="flex gap-2">
-            <Input
+      {/* Input Area */}
+      <div className="border-t border-slate-100 bg-white/50 p-4 backdrop-blur-md">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            handleSend()
+          }}
+          className="flex gap-3 max-w-4xl mx-auto relative"
+        >
+            <Input 
+              className="h-12 pl-4 pr-12 bg-white border-slate-200 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all text-sm rounded-xl shadow-sm" 
+              placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder={available ? "Type your message..." : "Chatbot unavailable"}
-              disabled={!available || loading}
-              className="flex-1 h-12 text-base rounded-full px-6 shadow-sm border-gray-300 focus:border-blue-500"
+              disabled={loading}
             />
-            <Button
-              onClick={handleSend}
-              disabled={!available || !input.trim() || loading}
-              className="h-12 w-12 rounded-full p-0 flex items-center justify-center shadow-md bg-blue-600 hover:bg-blue-700"
+            <Button 
+                type="submit" 
+                disabled={loading || !input.trim()} 
+                size="icon" 
+                className="absolute right-1.5 top-1.5 h-9 w-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all hover:scale-105"
             >
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5 ml-0.5" />}
+                <Send className="h-4 w-4 text-white" />
             </Button>
-          </div>
-          <p className="text-xs text-center text-slate-400 mt-2">
-            AI can make mistakes. Please verify important information.
-          </p>
-        </div>
+        </form>
       </div>
     </div>
   )

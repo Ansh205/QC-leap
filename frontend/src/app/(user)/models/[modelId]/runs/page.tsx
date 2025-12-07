@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { runs as runsAPI, images as imagesAPI } from '@/lib/api'
-import { Loader2, Calendar, Activity, Image as ImageIcon } from 'lucide-react'
+import { Loader2, Calendar, Image as ImageIcon, ArrowLeft } from 'lucide-react'
 
 type Run = {
   id: number
@@ -28,8 +28,8 @@ export default function ModelRunsPage() {
       try {
         setLoading(true)
         const data = await runsAPI.list(modelId)
-        // API returns the array directly due to interceptor
-        setRuns(data as any as Run[])
+        // [FIX] Double cast: AxiosResponse -> unknown -> Run[]
+        setRuns(data as unknown as Run[])
       } catch (err) {
         console.error('Failed to fetch runs', err)
         setError('Failed to load runs')
@@ -43,90 +43,65 @@ export default function ModelRunsPage() {
     }
   }, [modelId])
 
-  if (loading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-96 flex-col items-center justify-center gap-4">
-        <p className="text-red-500">{error}</p>
-        <Link href={`./`}>
-          <Button variant="outline">Go Back</Button>
-        </Link>
-      </div>
-    )
-  }
+  if (loading) return <div className="flex h-96 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+  if (error) return <div className="flex h-96 items-center justify-center text-red-500">{error}</div>
 
   return (
-    <div className="py-8">
-      <div className="mt-0.5 flex justify-between">
-        <div>
-          <p className="text-3xl font-bold">QCL-{modelId}</p>
-          <p className="text-slate-600">Inspection Model / Runs</p>
-        </div>
-        <div className="flex items-end gap-5">
+    <div className="pt-1 pb-8 max-w-7xl mx-auto space-y-4 animate-in fade-in duration-500">
+      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div className="flex items-center gap-3">
           <Link href={`/models/${modelId}`}>
-            <Button className="w-40 bg-slate-200 text-black" variant={'outline'}>
-              View Model
+            <Button variant="ghost" size="icon" className="h-8 w-8 -ml-2 text-slate-500 hover:text-slate-900">
+                <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Run History</h1>
+            <p className="text-sm text-slate-500 mt-0.5">QCL-{modelId}</p>
+          </div>
         </div>
       </div>
 
-      <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {runs.length === 0 ? (
-          <div className="col-span-3 py-10 text-center text-gray-500">
-            No runs found for this model.
+          <div className="col-span-full py-16 text-center text-slate-400 bg-slate-50/50 rounded-xl border border-dashed">
+            <p>No runs found for this model.</p>
           </div>
         ) : (
           runs.map((run) => (
-            <Card key={run.id} className="relative pt-0">
-              <div className="relative flex h-48 flex-col items-center justify-center overflow-hidden rounded-t-md bg-gray-100">
+            <Card key={run.id} className="group relative overflow-hidden hover:shadow-md transition-all duration-300 border-gray-200">
+              <div className="relative flex h-40 flex-col items-center justify-center overflow-hidden bg-gray-100 border-b">
                 {run.preview_image_id ? (
                   <img
                     src={imagesAPI.getImageUrl(run.preview_image_id)}
-                    alt={`Run ${run.run_number} preview`}
-                    className="h-full w-full object-cover"
+                    alt={`Run ${run.run_number}`}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="flex flex-col items-center text-gray-400">
-                    <ImageIcon className="mb-2 h-12 w-12" />
-                    <span className="text-sm">No images</span>
+                    <ImageIcon className="mb-2 h-8 w-8 opacity-20" />
+                    <span className="text-[10px] font-medium">No preview</span>
                   </div>
                 )}
-
-                {/* <div className="absolute top-2 right-2">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium shadow-sm ${
-                      run.status === 'COMPLETED'
-                        ? 'bg-green-100 text-green-800'
-                        : run.status === 'FAILED'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                    }`}
-                  >
-                    {run.status}
-                  </span>
-                </div> */}
+                <div className="absolute top-2 right-2">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/90 shadow-sm ${run.status === 'COMPLETED' ? 'text-green-700' : 'text-slate-700'}`}>
+                        {run.status}
+                    </span>
+                </div>
               </div>
-              <CardContent className="pt-4">
-                <div className="item-center relative flex justify-between">
-                  <h3 className="text-lg font-semibold">Run-{run.run_number}</h3>
+              
+              <CardContent className="p-3">
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="text-sm font-bold text-gray-900">Run #{run.run_number}</h3>
                   <Link href={`./runs/${run.id}`}>
-                    <Button size={'sm'} variant={'outline'} className="w-24">
-                      View
+                    <Button size="sm" variant="outline" className="h-7 text-xs px-3">
+                      Details
                     </Button>
                   </Link>
                 </div>
-                <div className="mt-2 flex items-center text-sm text-gray-600">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {new Date(run.created_at).toLocaleDateString()}{' '}
-                  {new Date(run.created_at).toLocaleTimeString()}
+                <div className="flex items-center text-xs text-slate-500">
+                  <Calendar className="mr-1.5 h-3 w-3" />
+                  {new Date(run.created_at).toLocaleDateString()}
                 </div>
               </CardContent>
             </Card>

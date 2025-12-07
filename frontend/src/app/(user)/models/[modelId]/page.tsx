@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { History } from 'lucide-react'
+import { History, Check, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import SampleImages from './_components/SampleImages'
 import Training from './_components/Training'
@@ -12,6 +12,12 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 type StepType = 'sample_images' | 'generated_images' | 'training'
+
+const STEPS = [
+  { id: 'sample_images', label: '1. Sample Images', description: 'Upload & Annotate' },
+  { id: 'generated_images', label: '2. Generate Data', description: 'Create Synthetic Data' },
+  { id: 'training', label: '3. Training', description: 'Train & Validate' },
+]
 
 export default function ModelDetailPage() {
   const params = useParams()
@@ -47,6 +53,7 @@ export default function ModelDetailPage() {
     fetchData()
   }
 
+  // Check for step completion/availability
   const hasImages = stats && stats.defective_images > 0 && stats.normal_images > 0
   const hasGenerated = stats && stats.synthetic_images > 0
 
@@ -56,101 +63,103 @@ export default function ModelDetailPage() {
     training: Training,
   }[step]
 
-  // Logic to determine if Run button should be shown
-  // Show if status is ready OR if it was previously trained (we can infer this if status is not ready but we want to allow running on old version?
-  // Actually, user said: "If it is already trained, never change run button".
-  // If status changes to 'training' or 'new', the model might not be runnable in the same way,
-  // BUT usually 'ready' means the *current* version is ready.
-  // However, if we just uploaded images, status might change to 'new'.
-  // If we want to allow running the *previous* model, the backend needs to support that.
-  // Assuming the backend keeps the last trained model available until a new one replaces it?
-  // For now, let's stick to 'ready' check, but maybe we need to persist 'ready' state locally or check if a model file exists?
-  // Let's assume if it WAS ready, we keep showing it? No, that's risky if status is 'training'.
-  // Let's look at the user request again: "If it is already trained, never change run button".
-  // This implies even if I upload new images (status -> new), I should still be able to run the OLD model.
-  // The backend `model.status` reflects the *current configuration* status.
-  // If the backend doesn't delete the old model file immediately, we might still be able to run it.
-  // But the UI relies on `model.status`.
-  // Let's try to be permissive: If model has `accuracy` (implies it was trained at least once), show Run button?
-  // Or maybe check if `model.status` is NOT 'training'?
-  // Let's try: Show Run button if `model.status === 'ready'` OR `model.accuracy != null`.
-  // Wait, `model.accuracy` might be null if never trained.
-
   const canRun =
     model && (model.status === 'ready' || (model.accuracy !== null && model.accuracy !== undefined))
 
   return (
-    <div className="py-8">
-      <div className="mt-0.5 flex justify-between">
-        <div>
-          <p className="text-3xl font-bold">QCL-{modelId}</p>
-          <p className="text-slate-600">Inspection Model</p>
+    <div className="space-y-4">
+      {/* Standardized Header - Compact Style
+          Updated: Center alignment on mobile (text-center, justify-center) 
+          switches to left alignment on desktop (md:text-left, md:justify-start)
+      */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-200 pb-4">
+        <div className="w-full md:w-auto text-center md:text-left">
+          <div className="flex items-center justify-center md:justify-start gap-3">
+            <Link href="/models" className="md:hidden">
+                <Button variant="ghost" size="icon" className="h-6 w-6 -ml-1 text-slate-400">
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
+            </Link>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+                {model?.name || `QCL-${modelId}`}
+            </h1>
+            {model?.status && (
+                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${ 
+                     model.status === 'ready' ? 'bg-green-50 text-green-700 border-green-200' : 
+                     model.status === 'training' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-600 border-slate-200'
+                 }`}>
+                     {model.status.replace(/_/g, ' ')}
+                 </span>
+             )}
+          </div>
+          <p className="text-xs text-slate-500 mt-1 ml-0 md:ml-0">Manage the lifecycle of your inspection model.</p>
         </div>
 
-        <div className="flex items-end gap-5">
+        <div className="flex items-center gap-2">
           {canRun && (
             <Link href={`./${modelId}/runs`}>
-              <Button className="w-40 bg-slate-200 text-black" variant={'outline'}>
-                <History className="mr-2 h-4 w-4" />
+              <Button variant="outline" size="sm" className="h-8 text-xs font-medium border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm">
+                <History className="mr-1.5 h-3.5 w-3.5" />
                 History
               </Button>
             </Link>
           )}
 
           {canRun ? (
-            <RunDialog modelId={id} />
-          ) : (
-            model && (
-              <span className="flex h-9 w-40 items-center justify-center rounded-md bg-gray-700 text-sm text-white capitalize">
-                {model.status.replace(/_/g, ' ')}
-              </span>
-            )
-          )}
+            <div className="transform scale-95 origin-right">
+                <RunDialog modelId={id} />
+            </div>
+          ) : null}
         </div>
       </div>
 
-      <div className="relative mt-10 w-fit">
-        <div className="bg-border absolute top-5 z-0 h-px w-full"></div>
-        <div className="relative z-10 flex gap-12">
-          <Link href="?step=sample_images">
-            <Button
-              variant={step === 'sample_images' ? 'default' : 'outline'}
-              className="w-48"
-              size={'lg'}
-            >
-              1. Sample Images
-            </Button>
-          </Link>
+      {/* Compact Stepper Navigation */}
+      <div className="rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+         <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-100">
+            {STEPS.map((s, index) => {
+                const isActive = s.id === step
+                const isCompleted = 
+                    (s.id === 'sample_images' && hasImages) ||
+                    (s.id === 'generated_images' && hasGenerated) ||
+                    (s.id === 'training' && model?.accuracy)
+                
+                const isDisabled = 
+                    (s.id === 'generated_images' && !hasImages) ||
+                    (s.id === 'training' && !hasGenerated)
 
-          <div className={!hasImages ? 'pointer-events-none opacity-50' : ''}>
-            <Link href="?step=generated_images" aria-disabled={!hasImages}>
-              <Button
-                variant={step === 'generated_images' ? 'default' : 'outline'}
-                className="w-48"
-                size={'lg'}
-                disabled={!hasImages}
-              >
-                2. Generated Images
-              </Button>
-            </Link>
-          </div>
-
-          <div className={!hasGenerated ? 'pointer-events-none opacity-50' : ''}>
-            <Link href="?step=training" aria-disabled={!hasGenerated}>
-              <Button
-                variant={step === 'training' ? 'default' : 'outline'}
-                className="w-48"
-                size={'lg'}
-                disabled={!hasGenerated}
-              >
-                3. Training
-              </Button>
-            </Link>
-          </div>
-        </div>
+                return (
+                    <div key={s.id} className="flex-1">
+                        <Link 
+                           href={isDisabled ? '#' : `?step=${s.id}`} 
+                           className={`group flex items-center px-4 py-3 transition-all ${isDisabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-slate-50'}`}
+                        >
+                            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold transition-colors ${
+                                isActive ? 'border-blue-600 bg-blue-600 text-white shadow-sm' :
+                                isCompleted ? 'border-green-500 bg-green-50 text-green-600' :
+                                'border-slate-200 text-slate-500 bg-slate-50 group-hover:border-slate-300'
+                            }`}>
+                                {isCompleted && !isActive ? <Check className="h-4 w-4" /> : index + 1}
+                            </div>
+                            <div className="ml-3 flex flex-col">
+                                <span className={`text-sm font-semibold leading-none ${isActive ? 'text-blue-700' : 'text-slate-700'}`}>
+                                    {s.label}
+                                </span>
+                                <span className="text-[10px] text-slate-500 mt-1 font-medium">
+                                    {s.description}
+                                </span>
+                            </div>
+                        </Link>
+                    </div>
+                )
+            })}
+         </div>
       </div>
-      <div className="mt-8 h-full w-full">
-        <StepComponent modelId={id} model={model} onModelUpdate={refreshModel} />
+
+      {/* Main Content Area */}
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5 min-h-[500px]">
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+             <StepComponent modelId={id} model={model} onModelUpdate={refreshModel} />
+        </div>
       </div>
     </div>
   )
