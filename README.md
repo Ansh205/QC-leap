@@ -1,49 +1,44 @@
-# soft-engg-project-sep-2025-se-SEP-20
-Software Engineering Project - September 2025 Term - Team 20
-
 # QC-Leap
 
-This project is a dashboard application for managing AI Inspection Models, built using **Next.js** and **React**. It utilizes **Tailwind CSS** for utility-first styling and **Radix UI** primitives for accessible components, ensuring a modern and responsive user experience.
+**Software Engineering Project - September 2025 Term - Team 20**
 
-## 📦 Installation
+QC-Leap is a comprehensive dashboard application for managing AI Inspection Models. It combines a robust Python/FastAPI backend for ML training and inference with a modern Next.js/React frontend for a seamless user experience.
 
-To set up the project locally, ensure you have **Node.js** (LTS version recommended) installed on your system.
+## � Project Structure
 
-1.  **Clone the Repository (If applicable) and Navigate:**
+This project is organized into two main directories:
 
-    ```bash
-    git clone https://github.com/kushabarodekar/soft-engg-project-sep-2025-se-SEP-20.git  
-    cd soft-engg-project-sep-2025-se-SEP-20
-    ```
+- **`backend/`**: Contains the FastAPI server, ML pipelines (MobileNetV3, Copy-Paste Augmentation), database models, and Celery workers.
+- **`frontend/`**: Contains the Next.js application, React components, and UI logic.
 
-2.  **Install Dependencies:**
-    Run the following command in your terminal to download all required packages:
+## 🛠️ Getting Started
 
-    ```bash
-    npm install
-    npm install next-themes sonner
-    ```
+To run the application, you need to set up and run both the backend and the frontend.
 
-## ▶️ Running the Application
+### Backend Setup
 
-To start the development server, which compiles the application and enables hot reloading:
+The backend handles data management, model training, and inference.
 
-```bash
-npm run dev
-```
+👉 **[Read the Backend README](./backend/README.md)** for detailed installation, configuration (environment variables), and running instructions.
 
-The application will be accessible at:
+**Quick Summary:**
 
-### **`http://localhost:3000`**
+1.  Navigate to `backend/`.
+2.  Create and activate a virtual environment.
+3.  Install dependencies: `pip install -r requirements.txt`.
+4.  Configure `.env`.
+5.  Run server: `uvicorn app.main:app --reload`.
+6.  Run Celery worker (for ML tasks).
 
+### Frontend Setup
 
-## 🗺️ Route to File Mapping
+The frontend provides the user interface for managing models, viewing results, and system administration.
 
-| **Route**              | **Main Files Used**                                                  |
-|-------------------------|---------------------------------------------------------------------|
-| `/`                    | `src/app/page.tsx`, `src/app/layout.tsx`                            |
-| `/models`              | `src/app/(user)/layout.tsx`, `src/app/(user)/models/page.tsx`        |
-| `/models/QCL-1`, `/models/QCL-1?step=sample_images`, `/models/QCL-1?step=generated_images`, `/models/QCL-1?step=training`        | `src/app/(user)/models/[modelId]/page.tsx`                           |
-| `/models/QCL-1/runs`   | `src/app/(user)/models/[modelId]/runs/page.tsx`                     |
-| `/invitation`                     |`src/app/(user)/layout.tsx, src/app/(user)/invitations/page.tsx`
-| `/account`                     |`src/app/(user)/layout.tsx, src/app/(user)/account/page.tsx`
+👉 **[Read the Frontend README](./frontend/README.md)** for development server commands and build instructions.
+
+**Quick Summary:**
+
+1.  Navigate to `frontend/`.
+2.  Install dependencies: `npm install`.
+3.  Run development server: `npm run dev`.
+4.  Access at `http://localhost:3000`.
