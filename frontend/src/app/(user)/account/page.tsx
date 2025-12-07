@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Building2, User, KeyRound, AlertTriangle, Pencil, Loader2 } from 'lucide-react'
+import { Building2, User, KeyRound, AlertTriangle, Pencil, Loader2, ShieldCheck, Briefcase } from 'lucide-react'
 import { toast } from 'sonner'
 import { auth } from '@/lib/api'
 
@@ -133,18 +133,18 @@ export default function AccountPage() {
   if (loading) return <div className="container mx-auto py-8 text-center text-sm text-slate-500">Loading...</div>
 
   return (
-    <div className="container mx-auto space-y-2 animate-in fade-in duration-500">
+    <div className="container mx-auto space-y-4 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-2 border-b border-gray-100 pb-2">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-b border-indigo-100/50 pb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Account Settings</h1>
-          <p className="text-xs text-slate-500">Manage your profile and security.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Account Settings</h1>
+          <p className="text-xs text-slate-500 font-medium">Manage your profile and security preferences.</p>
         </div>
         
         <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" variant="outline" className="h-7 text-xs bg-white border-slate-200 shadow-sm">
-              <KeyRound className="mr-2 h-3 w-3" /> Change Password
+            <Button size="sm" variant="outline" className="h-8 text-xs border-indigo-100 bg-white text-indigo-700 hover:bg-indigo-50 shadow-sm hover:border-indigo-200">
+              <KeyRound className="mr-2 h-3.5 w-3.5" /> Change Password
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[400px]">
@@ -177,20 +177,22 @@ export default function AccountPage() {
         </Dialog>
       </div>
 
-      <div className="grid gap-3">
+      <div className="grid gap-4">
         {/* User Information */}
-        <Card className="w-full shadow-sm border-slate-200">
-          <CardHeader className="py-2 border-b border-slate-50 px-4">
+        <Card className="w-full shadow-lg shadow-blue-900/5 border-white/60 bg-white/80 backdrop-blur-xl">
+          <CardHeader className="py-3 border-b border-indigo-50/50 px-5">
             <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-50 rounded-lg"><User className="h-4 w-4 text-blue-600" /></div>
-                    <div><CardTitle className="text-sm font-semibold text-slate-900">User Information</CardTitle></div>
+                <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/20">
+                        <User className="h-4 w-4" />
+                    </div>
+                    <div><CardTitle className="text-sm font-bold text-slate-800">User Profile</CardTitle></div>
                 </div>
                 
                 <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-slate-100">
-                            <Pencil className="h-3.5 w-3.5 text-slate-500" />
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-full">
+                            <Pencil className="h-3.5 w-3.5" />
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px]">
@@ -222,57 +224,70 @@ export default function AccountPage() {
                 </Dialog>
             </div>
           </CardHeader>
-          <CardContent className="pt-2 px-4 pb-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-3">
-              <div><Label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Username</Label><p className="text-sm font-medium">{userData?.username}</p></div>
-              <div><Label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Email</Label><p className="text-sm font-medium">{userData?.email}</p></div>
-              <div><Label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Full Name</Label><p className="text-sm font-medium">{userData?.full_name || '-'}</p></div>
-              <div><Label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Company</Label><p className="text-sm font-medium">{userData?.company?.name || 'None'}</p></div>
+          <CardContent className="pt-4 px-5 pb-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-4">
+              <div><Label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Username</Label><p className="text-sm font-semibold text-slate-700 mt-0.5">{userData?.username}</p></div>
+              <div><Label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email</Label><p className="text-sm font-medium text-slate-700 mt-0.5">{userData?.email}</p></div>
+              <div><Label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Full Name</Label><p className="text-sm font-medium text-slate-700 mt-0.5">{userData?.full_name || '-'}</p></div>
+              <div>
+                  <Label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Role</Label>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                    <p className="text-sm font-medium text-slate-700">{userData?.role}</p>
+                  </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Company Info */}
         {userData?.company_id && (
-          <Card className="w-full shadow-sm border-slate-200">
-            <CardHeader className="py-2 border-b border-slate-50 px-4">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 bg-indigo-50 rounded-lg"><Building2 className="h-4 w-4 text-indigo-600" /></div>
-                <div><CardTitle className="text-sm font-semibold text-slate-900">Company Information</CardTitle></div>
+          <Card className="w-full shadow-lg shadow-indigo-900/5 border-white/60 bg-white/80 backdrop-blur-xl">
+            <CardHeader className="py-3 border-b border-indigo-50/50 px-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/20">
+                    <Briefcase className="h-4 w-4" />
+                </div>
+                <div><CardTitle className="text-sm font-bold text-slate-800">Company Details</CardTitle></div>
               </div>
             </CardHeader>
-            <CardContent className="pt-2 px-4 pb-4 space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                <div><Label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Name</Label><p className="text-sm font-medium">{userData?.company?.name}</p></div>
-                <div><Label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Industry</Label><p className="text-sm font-medium">{userData?.company?.industry}</p></div>
+            <CardContent className="pt-4 px-5 pb-5 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                <div><Label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Company Name</Label><p className="text-sm font-semibold text-slate-700 mt-0.5">{userData?.company?.name}</p></div>
+                <div><Label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Industry</Label><p className="text-sm font-medium text-slate-700 mt-0.5">{userData?.company?.industry}</p></div>
               </div>
-              <div><Label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Description</Label><p className="text-sm font-medium">{userData?.company?.description}</p></div>
+              <div><Label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Description</Label><p className="text-sm font-medium text-slate-600 mt-0.5 leading-relaxed">{userData?.company?.description}</p></div>
             </CardContent>
           </Card>
         )}
 
         {/* Danger Zone */}
-        <Card className="w-full border-red-100 shadow-sm">
-          <CardHeader className="py-2 border-b border-red-50 bg-red-50/30 px-4">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-red-100 rounded-lg"><AlertTriangle className="h-4 w-4 text-red-600" /></div>
-              <div><CardTitle className="text-sm font-semibold text-red-900">Danger Zone</CardTitle></div>
+        <Card className="w-full border-red-100/60 bg-red-50/30 shadow-none">
+          <CardHeader className="py-3 border-b border-red-100/60 px-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-red-500 to-orange-600 text-white shadow-md shadow-red-500/20">
+                <AlertTriangle className="h-4 w-4" />
+              </div>
+              <div><CardTitle className="text-sm font-bold text-red-900">Danger Zone</CardTitle></div>
             </div>
           </CardHeader>
-          <CardContent className="pt-2 px-4 pb-2">
-            <div className="flex justify-between items-center my-1">
-              <div><h4 className="text-sm font-medium text-slate-900">Delete Account</h4><p className="text-[11px] text-slate-500">Permanently remove your account.</p></div>
-              <Button variant="destructive" size="sm" className="h-7 text-xs px-3" onClick={() => setIsDeleteDialogOpen(true)}>Delete</Button>
+          <CardContent className="pt-4 px-5 pb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div>
+                  <h4 className="text-sm font-semibold text-slate-900">Delete Account</h4>
+                  <p className="text-xs text-slate-500 mt-0.5">Permanently remove your account and all associated data.</p>
+              </div>
+              <Button variant="destructive" size="sm" className="h-8 text-xs px-4" onClick={() => setIsDeleteDialogOpen(true)}>Delete Account</Button>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Added Missing Delete Confirmation Dialog */}
+      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[400px]">
             <DialogHeader>
-                <DialogTitle className="text-red-600">Delete Account</DialogTitle>
+                <DialogTitle className="text-red-600 flex items-center gap-2"><AlertTriangle className="h-5 w-5"/> Delete Account</DialogTitle>
                 <DialogDescription>
                     Are you sure you want to delete your account? This action cannot be undone and will remove all your data.
                 </DialogDescription>

@@ -3,9 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Send, Bot, User as UserIcon, Loader2 } from 'lucide-react'
+import { Send, Bot, User, Sparkles, Loader2, Zap } from 'lucide-react'
 import { toast } from 'sonner'
-import axios from 'axios'
 import ReactMarkdown from 'react-markdown'
 
 interface Message {
@@ -17,10 +16,8 @@ export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sessionId] = useState(() => `session_${Date.now()}`)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -34,15 +31,11 @@ export default function ChatbotPage() {
     setLoading(true)
 
     try {
-      // Replace with your actual API endpoint
-      // const response = await axios.post('/api/chat', { message: input, sessionId })
-      // const botMessage: Message = { role: 'assistant', content: response.data.message }
-      
-      // Simulation for demo purposes
+      // Simulate API response
       setTimeout(() => {
         const botMessage: Message = { 
             role: 'assistant', 
-            content: "I'm analyzing your defect data. It looks like the most common defect type this week is **Surface Scratching**, primarily affecting the Q4 production batch." 
+            content: "I've analyzed the latest **production run**. \n\nIt looks like the defect rate has dropped by **12%** compared to last week. The most common issue remains *surface scratching* on the Q4 batch." 
         }
         setMessages((prev) => [...prev, botMessage])
         setLoading(false)
@@ -55,58 +48,90 @@ export default function ChatbotPage() {
   }
 
   return (
-    // Height calculation: 100vh - Navbar(4rem/64px) - Layout Padding(2rem/32px approx) = ~calc(100vh - 6.5rem)
-    // using flex column to keep input at bottom
-    <div className="flex h-[calc(100vh-6.5rem)] flex-col bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="flex h-[calc(100vh-6.5rem)] flex-col bg-white/80 backdrop-blur-xl rounded-2xl border border-white/40 shadow-2xl shadow-indigo-100 overflow-hidden">
       
-      {/* Sticky Header - Matches 'Inspection Models' layout style */}
-      <div className="sticky top-0 z-20 border-b border-slate-100 bg-white/90 backdrop-blur-md px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
-             <Bot className="h-6 w-6" />
+      {/* Sticky Header with Gradient Icon */}
+      <div className="sticky top-0 z-20 border-b border-indigo-50 bg-white/90 backdrop-blur-md px-6 py-4">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-fuchsia-600 to-purple-600 text-white shadow-lg shadow-purple-500/25 ring-1 ring-white/50">
+             <Sparkles className="h-6 w-6" />
           </div>
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 leading-none">Jemih AI</h1>
-            <p className="text-xs text-slate-500 mt-1 font-medium">QC Assistant</p>
+            <div className="flex items-center gap-1.5 mt-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <p className="text-xs font-medium text-slate-500">Online & Ready</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/30 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 scroll-smooth">
         {messages.length === 0 && (
            <div className="flex h-full flex-col items-center justify-center text-center text-slate-400">
-              <div className="bg-slate-100 p-4 rounded-full mb-3">
-                  <Bot className="h-8 w-8 text-slate-300" />
+              <div className="bg-gradient-to-b from-indigo-50 to-white p-6 rounded-full mb-4 border border-indigo-50 shadow-sm">
+                  <Bot className="h-12 w-12 text-indigo-300" />
               </div>
-              <h3 className="text-sm font-semibold text-slate-700">No messages yet</h3>
-              <p className="text-xs max-w-xs mt-1">Ask me about defect rates, model performance, or recent inspection runs.</p>
+              <h3 className="text-base font-semibold text-slate-700">How can I help you today?</h3>
+              <p className="text-sm text-slate-500 max-w-xs mt-2">I can analyze defect rates, summarize run history, or explain model performance metrics.</p>
+              
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
+                  <button onClick={() => setInput("Show me the defect rate for today")} className="text-xs text-left p-3 rounded-lg border border-slate-100 bg-white hover:border-indigo-200 hover:shadow-md transition-all flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-amber-500" /> Defect rate today?
+                  </button>
+                  <button onClick={() => setInput("Which model is performing best?")} className="text-xs text-left p-3 rounded-lg border border-slate-100 bg-white hover:border-indigo-200 hover:shadow-md transition-all flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-indigo-500" /> Best performing model?
+                  </button>
+              </div>
            </div>
         )}
         
         {messages.map((m, index) => (
           <div
             key={index}
-            className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex w-full gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
+            {m.role === 'assistant' && (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-600 to-purple-600 text-white shadow-sm mt-1">
+                    <Bot className="h-4 w-4" />
+                </div>
+            )}
+
             <div
-              className={`flex max-w-[80%] items-start gap-3 rounded-2xl px-4 py-3 text-sm shadow-sm ${
-                m.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-tr-none'
-                  : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'
-              }`}
+              className={`flex max-w-[80%] flex-col gap-1 ${m.role === 'user' ? 'items-end' : 'items-start'}`}
             >
-              <div className="prose prose-sm dark:prose-invert max-w-none break-words">
-                 <ReactMarkdown>{m.content}</ReactMarkdown>
-              </div>
+                <div
+                className={`px-5 py-3.5 text-sm shadow-sm ${
+                    m.role === 'user'
+                    ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-2xl rounded-tr-sm shadow-blue-500/20'
+                    : 'bg-white text-slate-700 border border-slate-100 rounded-2xl rounded-tl-sm shadow-slate-200/50'
+                }`}
+                >
+                <div className="prose prose-sm dark:prose-invert max-w-none break-words leading-relaxed">
+                    <ReactMarkdown>{m.content}</ReactMarkdown>
+                </div>
+                </div>
             </div>
+
+            {m.role === 'user' && (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 mt-1">
+                    <User className="h-4 w-4" />
+                </div>
+            )}
           </div>
         ))}
         {loading && (
-          <div className="flex justify-start">
-            <div className="flex items-center gap-2 rounded-2xl rounded-tl-none bg-white border border-slate-100 px-4 py-3 text-sm shadow-sm">
-              <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-              <span className="text-slate-400 text-xs">Thinking...</span>
+          <div className="flex justify-start gap-3">
+             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-600 to-purple-600 text-white shadow-sm mt-1">
+                <Bot className="h-4 w-4" />
+            </div>
+            <div className="flex items-center gap-2 rounded-2xl rounded-tl-none bg-white border border-slate-100 px-5 py-4 text-sm shadow-sm">
+              <Loader2 className="h-4 w-4 animate-spin text-fuchsia-600" />
+              <span className="text-slate-400 text-xs font-medium">Jemih is thinking...</span>
             </div>
           </div>
         )}
@@ -114,16 +139,16 @@ export default function ChatbotPage() {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-slate-100 bg-white p-4">
+      <div className="border-t border-slate-100 bg-white/50 p-4 backdrop-blur-md">
         <form
           onSubmit={(e) => {
             e.preventDefault()
             handleSend()
           }}
-          className="flex gap-3 max-w-4xl mx-auto"
+          className="flex gap-3 max-w-4xl mx-auto relative"
         >
             <Input 
-              className="h-11 bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-300 transition-all text-sm" 
+              className="h-12 pl-4 pr-12 bg-white border-slate-200 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 transition-all text-sm rounded-xl shadow-sm" 
               placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -133,9 +158,9 @@ export default function ChatbotPage() {
                 type="submit" 
                 disabled={loading || !input.trim()} 
                 size="icon" 
-                className="h-11 w-11 shrink-0 bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/10"
+                className="absolute right-1.5 top-1.5 h-9 w-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all hover:scale-105"
             >
-                <Send className="h-4 w-4" />
+                <Send className="h-4 w-4 text-white" />
             </Button>
         </form>
       </div>
