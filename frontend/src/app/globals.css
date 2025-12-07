@@ -3,8 +3,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Define CSS Variables with HSL values directly for v4 compatibility */
 :root {
-  /* Professional Enterprise Theme (HSL) - Wrapped in hsl() for v4 compatibility */
   --background: hsl(0 0% 100%);
   --foreground: hsl(222.2 84% 4.9%);
   
@@ -14,7 +14,6 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222.2 84% 4.9%);
   
-  /* Primary Brand Blue */
   --primary: hsl(221.2 83.2% 53.3%);
   --primary-foreground: hsl(210 40% 98%);
   
@@ -36,7 +35,6 @@
   
   --radius: 0.5rem;
   
-  /* Chart Colors */
   --chart-1: hsl(221.2 83.2% 53.3%);
   --chart-2: hsl(215 20.2% 65.1%);
   --chart-3: hsl(199 89% 48%);
@@ -89,6 +87,7 @@
   --chart-5: hsl(340 75% 55%);
 }
 
+/* Map CSS variables to Tailwind Utility Classes */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -114,12 +113,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Animations */
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -144,12 +145,16 @@
   animation: blob 7s infinite;
 }
 
+/* Base Styles */
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    /* Use standard CSS instead of @apply to fix build errors */
+    border-color: var(--border);
+    outline-color: var(--ring);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
   }
   button:not(:disabled),
   [role='button']:not(:disabled) {
