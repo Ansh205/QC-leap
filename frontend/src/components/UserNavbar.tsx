@@ -9,7 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Building2, ChartColumnStacked, LogOut, UserCog, MessageSquare } from 'lucide-react'
+// Added Cuboid to imports
+import { Building2, ChartColumnStacked, LogOut, UserCog, MessageSquare, Cuboid } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { auth } from '@/lib/api'
@@ -56,7 +57,6 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60">
-      {/* FULL WIDTH: Removed max-w-7xl mx-auto */}
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
@@ -74,6 +74,13 @@ export default function Navbar() {
             <NotificationBell />
             
             <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+
+            {/* Added Models Button */}
+            <NavButton 
+              href={'/models'} 
+              icon={Cuboid} 
+              active={pathname === '/models' || pathname.startsWith('/models/')}
+            />
 
             <NavButton 
               href={'/chatbot'} 
