@@ -783,7 +783,7 @@ export default function SampleImages({
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={(open) => !loading && setIsDialogOpen(open)}>
-        <DialogContent className="max-w-5xl">
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingImageId
@@ -825,7 +825,7 @@ export default function SampleImages({
                 style={{
                   display: imageLoaded ? 'block' : 'none',
                   maxWidth: '100%',
-                  maxHeight: '300px',
+                  maxHeight: '50vh', // Changed from 300px to dynamic viewport height for better visibility
                   objectFit: 'contain',
                 }}
               />
@@ -838,9 +838,9 @@ export default function SampleImages({
             zoom.
           </p>
 
-          <DialogFooter className="gap-2 sm:justify-between">
+          <DialogFooter className="gap-2 sm:justify-between sticky bottom-0 bg-white pt-2 border-t mt-4 z-10">
             {!editingImageId && (
-              <div className="flex w-full items-center justify-between">
+              <div className="flex w-full items-center justify-between flex-wrap gap-2">
                 <div className="flex gap-2">
                   <Button variant="destructive" onClick={handleSkipAll} disabled={loading}>
                     {loading ? 'Processing...' : 'Skip All'}
