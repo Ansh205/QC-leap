@@ -119,35 +119,6 @@ celery -A app.ml.celery_app worker --loglevel=info
 redis-server --port 6380
 ```
 
-## API Endpoints
-
-### Authentication
-
-- `POST /api/v1/auth/register` - Register new company
-- `POST /api/v1/auth/login` - Login user
-- `POST /api/v1/auth/refresh` - Refresh JWT token
-
-### Models
-
-- `POST /api/v1/models` - Create inspection model
-- `GET /api/v1/models` - List user's models
-- `GET /api/v1/models/{id}` - Get model details
-- `POST /api/v1/models/{id}/start-training` - Start training
-- `GET /api/v1/models/{id}/progress/stream` - SSE progress stream
-- `POST /api/v1/models/{id}/predict` - Single image prediction
-- `POST /api/v1/models/{id}/predict-batch` - Batch prediction
-
-### Images
-
-- `POST /api/v1/images/{model_id}/upload` - Upload images
-- `POST /api/v1/images/{model_id}/upload-zip` - Upload ZIP
-- `POST /api/v1/images/{model_id}/upload-masks` - Upload annotation masks
-- `GET /api/v1/images/{id}/file` - Serve image file
-
-### Chatbot
-
-- `POST /api/v1/chatbot/chat` - Chat with AI assistant
-
 ## Training Configuration
 
 Default training parameters in `mobilenet_service.py`:
