@@ -65,13 +65,6 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. **Configure environment:**
-
-```bash
-cp .env.example .env
-# Edit .env with your credentials
-```
-
 Required `.env` variables:
 
 ```env
