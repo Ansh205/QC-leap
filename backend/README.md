@@ -123,7 +123,7 @@ celery -A app.ml.celery_app worker --loglevel=info
 **Terminal 3 - Redis (if not using Docker):**
 
 ```bash
-redis-server
+redis-server --port 6380
 ```
 
 ## API Endpoints

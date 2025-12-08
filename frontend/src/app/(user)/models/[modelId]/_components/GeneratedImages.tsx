@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { useState, useEffect, useRef } from 'react'
 import { models as modelsAPI, images as imagesAPI, Image } from '@/lib/api'
 import { Loader2, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export default function GeneratedImages({
   modelId,
@@ -170,9 +171,14 @@ export default function GeneratedImages({
       setProgress(0)
       setSyntheticImages([]) // Clear previous images
 
-      // First update the model config with num images?
-      // The API uses model.num_synthetic_images.
-      // We might need to update the model first.
+      // Validate and clamp
+      if (numImages < minImages || numImages > maxImages) {
+        setError(`Please enter a value between ${minImages} and ${maxImages}`)
+        setGenerating(false)
+        return
+      }
+
+      // First update the model config with num images
       await modelsAPI.update(modelId, { num_synthetic_images: numImages })
 
       console.log('Calling API to generate synthetic images...')
@@ -199,8 +205,16 @@ export default function GeneratedImages({
             id="numImages"
             type="number"
             value={numImages}
-            onChange={(e) => setNumImages(parseInt(e.target.value))}
-            className="w-full"
+            onChange={(e) => {
+              const val = e.target.value === '' ? 0 : parseInt(e.target.value)
+              setNumImages(isNaN(val) ? 0 : val)
+              setError(null) // Clear error on change
+            }}
+            className={cn(
+              'w-full',
+              (numImages < minImages || numImages > maxImages) &&
+                'border-red-500 focus-visible:ring-red-500'
+            )}
             min={minImages}
             max={maxImages}
             disabled={generating}
@@ -226,19 +240,19 @@ export default function GeneratedImages({
             )}
           </Button>
         )}
-        
+
         {/* Progress Indicator */}
         {generating && (
-            <div className="space-y-2 rounded-lg border border-orange-100 bg-orange-50/50 p-4">
-                <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-orange-800">Generation Progress</span>
-                    <span className="font-bold text-orange-700">{Math.round(progress)}%</span>
-                </div>
-                <Progress value={progress} className="h-2 bg-orange-100" />
-                <p className="text-xs text-orange-600/80">
-                    Generating synthetic defects based on your annotations...
-                </p>
+          <div className="space-y-2 rounded-lg border border-orange-100 bg-orange-50/50 p-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium text-orange-800">Generation Progress</span>
+              <span className="font-bold text-orange-700">{Math.round(progress)}%</span>
             </div>
+            <Progress value={progress} className="h-2 bg-orange-100" />
+            <p className="text-xs text-orange-600/80">
+              Generating synthetic defects based on your annotations...
+            </p>
+          </div>
         )}
 
         {error && (

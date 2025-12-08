@@ -869,6 +869,8 @@ export default function SampleImages({
                   <Button variant="destructive" onClick={handleSkipAll} disabled={loading}>
                     {loading ? 'Processing...' : 'Skip All'}
                   </Button>
+                </div>
+                <div className="flex gap-2">
                   <Button
                     variant="ghost"
                     className="text-red-500 hover:bg-red-50 hover:text-red-700"
@@ -877,8 +879,6 @@ export default function SampleImages({
                   >
                     <Trash2 size={16} className="mr-2" /> Delete
                   </Button>
-                </div>
-                <div className="flex gap-2">
                   <Button variant="outline" onClick={handleSkipImage} disabled={loading}>
                     {loading ? 'Processing...' : 'Skip'}
                   </Button>

@@ -186,6 +186,21 @@ export default function StatsPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="border-white/60 bg-white/80 shadow-lg shadow-purple-500/5 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                  Total Models
+                </p>
+                <h3 className="mt-1 text-2xl font-bold text-slate-900">{modelStats.count}</h3>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-md shadow-purple-500/20">
+                <BrainCircuit className="h-5 w-5" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card className="border-white/60 bg-white/80 shadow-lg shadow-blue-500/5 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1">
           <CardContent className="p-5">
             <div className="flex items-start justify-between">
@@ -213,22 +228,6 @@ export default function StatsPage() {
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/20">
                 <Percent className="h-5 w-5" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-white/60 bg-white/80 shadow-lg shadow-purple-500/5 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1">
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
-                  Total Models
-                </p>
-                <h3 className="mt-1 text-2xl font-bold text-slate-900">{modelStats.count}</h3>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-md shadow-purple-500/20">
-                <BrainCircuit className="h-5 w-5" />
               </div>
             </div>
           </CardContent>
